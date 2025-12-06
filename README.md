@@ -140,20 +140,14 @@ Spikes at transition points reflect **detected workload shifts**.
 > Additional small spikes typically represent exploratory deviations or behavioral anomalies — useful for safety monitoring and drift awareness.
 
 ---
+## 🎥 Demo 1 — Live Transition Animation
 
-## 📸 Demo 1 Screenshots / Animation
+![HTM-State Demo 1 Live Transition](docs/gifs/demo1.gif)
 
-> *(Add sample output images or GIFs here once captured.)*
-
-For example:
-
-```markdown
-![Live Demo Before Transition](docs/images/demo1_before.png)
-![Live Demo After Transition with Spike](docs/images/demo1_after.png)
-
-![Demo 1 Live GIF](docs/gifs/demo1_live.gif)
-```
-
+*HTM-State continuously learns operator behavior in real time.  
+This animation shows a workload transition (change in control dynamics) —  
+the spike marker indicates when the system **recognizes the behavioral shift**  
+and rapidly stabilizes into the new mode without retraining.*
 ---
 
 ## 🧠 Why Demo 1 matters
