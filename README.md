@@ -36,26 +36,27 @@ Machines deteriorate gradually.
 
 HTM-State solves this by:
 
-✔ online learning  
-✔ no supervision  
-✔ no retraining  
-✔ sub-second reaction timing  
+- ✔ online learning  
+- ✔ no supervision  
+- ✔ no retraining  
+- ✔ sub-second reaction timing  
 
 ---
 
 ## 🔁 Core Architecture
 
-Input features ──► HTM Encoder + SP + TM ─► Anomaly
-│
-▼
-State Estimator (EMA)
-│
-▼
-Growth-based Spike Detector
-│
-▼
-Transition detection + latency metric
-
+```text
+Input features  ──► HTM Encoder + SP + TM  ─► Anomaly
+                                            │
+                                            ▼
+                                     State Estimator (EMA)
+                                            │
+                                            ▼
+                              Growth-based Spike Detector
+                                            │
+                                            ▼
+                        Transition detection + latency metric
+```
 
 This structure is **domain-agnostic** — swapping input features yields new applications without rewriting logic.
 
@@ -63,14 +64,14 @@ This structure is **domain-agnostic** — swapping input features yields new app
 
 ## ✨ What the repo includes
 
-- A pluggable HTM engine backend
-- Online state estimator
-- Growth-based spike detector
-- Detection lag metric
-- Live streaming visualizer
-- Offline evaluation tool
-- Synthetic workload dataset
-- A path to multiple domain demos
+- A pluggable HTM engine backend  
+- Online state estimator  
+- Growth-based spike detector  
+- Detection lag metric  
+- Live streaming visualizer  
+- Offline evaluation tool  
+- Synthetic workload dataset  
+- A path to multiple domain demos  
 
 ---
 
@@ -80,10 +81,10 @@ This first demo illustrates HTM-State applied to **pilot-style operator workload
 
 ### ✈️ Scenario
 
-We simulate 1000 seconds of control activity:
+We simulate 1000 steps of control activity:
 
 - First half: slower, smoother human control  
-- Second half: higher tempo, more variability (increased workload)
+- Second half: higher tempo, more variability (increased workload)  
 
 There is **no training data** and **no supervision**.
 
@@ -97,17 +98,21 @@ There is **no training data** and **no supervision**.
 
 ## 💻 Running Demo 1 (Offline Evaluation)
 
-python -m scripts.offline_demo_detection_lag
---csv demos/workload_demo/synthetic_workload.csv
---backend htm
---rate-hz 10
+```bash
+python -m scripts.offline_demo_detection_lag \
+    --csv demos/workload_demo/synthetic_workload.csv \
+    --backend htm \
+    --rate-hz 10
+```
 
 Example output:
-    Processed 1000 steps...
-    Using ground-truth toggle_step = 501
-    Detection lag: 5 steps
-    Detection lag: 0.500 s at 10 Hz
 
+```text
+Processed 1000 steps...
+Using ground-truth toggle_step = 501
+Detection lag: 5 steps
+Detection lag: 0.500 s at 10 Hz
+```
 
 ### ➤ Interpretation
 
@@ -121,13 +126,14 @@ That represents near-real-time awareness without supervision.
 
 ## 🎥 Live Visualization
 
+```bash
 python -m scripts.live_demo_state --backend htm --rate-hz 10
-
+```
 
 This shows two scrolling plots:
 
-1) **Control signals**  
-2) **HTM State + detected spikes**
+1. **Control signals**  
+2. **HTM State + detected spikes**  
 
 Spikes at transition points reflect **detected workload shifts**.
 
@@ -135,10 +141,18 @@ Spikes at transition points reflect **detected workload shifts**.
 
 ---
 
-## 📸 Demo 1 Screenshots
+## 📸 Demo 1 Screenshots / Animation
 
-> *(Add sample output images here once captured)*
+> *(Add sample output images or GIFs here once captured.)*
 
+For example:
+
+```markdown
+![Live Demo Before Transition](docs/images/demo1_before.png)
+![Live Demo After Transition with Spike](docs/images/demo1_after.png)
+
+![Demo 1 Live GIF](docs/gifs/demo1_live.gif)
+```
 
 ---
 
@@ -146,15 +160,13 @@ Spikes at transition points reflect **detected workload shifts**.
 
 This validates:
 
-✔ online learning  
-✔ unsupervised change detection  
-✔ fast response  
-✔ streaming embodiment  
-✔ generality of approach  
+- ✔ online learning  
+- ✔ unsupervised change detection  
+- ✔ fast response  
+- ✔ streaming embodiment  
+- ✔ generality of approach  
 
 This forms the baseline for domain expansion.
-
----
 
 ---
 
@@ -172,35 +184,37 @@ This forms the baseline for domain expansion.
 
 - ICU nurse / surgical motion workload detection  
 - Real-time fatigue shift / performance change monitoring  
-- Valuable for patient safety, staffing load, augmented reality assistive systems
-
----
+- Valuable for patient safety, staffing load, augmented reality assistive systems  
 
 ---
 
 # 🛠 Architecture Components
 
-### ✔ HTM Backend  
+### ✔ HTM Backend
+
 Encoders + Spatial Pooler + Temporal Memory using biologically-inspired learning.
 
-### ✔ State Engine  
+### ✔ State Engine
+
 Smooths anomaly into interpretable state estimates.
 
-### ✔ Spike Detector  
+### ✔ Spike Detector
+
 Detects transitions via growth differential logic.
 
-### ✔ Detection Lag Metric  
+### ✔ Detection Lag Metric
+
 Measures adaptation time — critical in safety systems.
 
 ---
 
 # 📦 Development Roadmap
 
-| Phase | Target |
-|------|--------|
-| Demo 1 | pilot workload transition |
-| Demo 2 | cyber drift detection |
-| Demo 3 | healthcare workload |
+| Phase  | Target                       |
+|-------|------------------------------|
+| Demo 1 | pilot workload transition    |
+| Demo 2 | cyber drift detection        |
+| Demo 3 | healthcare workload          |
 | Demo 4 | industrial predictive change |
 | Demo 5 | UAV safety horizon estimation |
 
@@ -217,9 +231,4 @@ especially for new datasets in cyber, healthcare, robotics, or autonomy.
 
 Sam Heiserman  
 Creator — HTM-State  
-
-*(add email or contact link if desired)*
-
----
- # or add a small comment somewhere
-
+sheiser1@binghamton.edu
