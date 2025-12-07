@@ -152,7 +152,7 @@ Spikes at transition points reflect **detected workload shifts**.
 
 ![HTM-State Demo 1 Live Transition](docs/gifs/demo1.gif)
 
-*HTM-State continuously learns operator behavior in real time.  
+*HTM-State continuously learns operator behavior in real time.*  
 This visualization shows the workload regime transition and HTM-State’s spike response:
 
 * blue line → system’s real-time state estimate  
@@ -172,12 +172,13 @@ Demo 1 validates:
 - ✔ streaming embodiment  
 - ✔ generality of approach  
 
-This forms the baseline for domain expansion.
+This validates HTM-State as a domain-agnostic adaptive inference engine.
 # 🚀 What Demo 1 proves
 
 ✔ HTM-State reacts in sub-second time  
 ✔ It requires **no labeled training data**  
 ✔ It adapts online like a human observer
+✔ It generalizes across domains — workload today, cyber and healthcare tomorrow  
 
 ---
 
