@@ -1,9 +1,9 @@
 # HTM-State  
-**Continuous online anomaly learning and state estimation for changing environments.**
+**Continuous online anomaly learning and operator/system state awareness across domains.**
 
 HTM-State is a real-time adaptive sensing system inspired by the neocortex.  
 It continuously learns patterns in streaming data, estimates underlying state,  
-detects transitions, and measures detection latency — all without retraining.
+detects transitions, and measures detection latency — all **without retraining or supervision**.
 
 It is designed to operate across domains:
 
@@ -14,7 +14,8 @@ It is designed to operate across domains:
 - UAV operator skill and safety  
 - Edge intelligence / autonomous agents  
 
-HTM-State provides a **unified operational pipeline** usable across all of them.
+HTM-State provides a **unified operational pipeline** that can be deployed wherever  
+behavioral pattern drift, safety monitoring, or cognitive state awareness is needed.
 
 ---
 
@@ -35,11 +36,12 @@ Intrusions evolve stealthily.
 Machines deteriorate gradually.
 
 HTM-State solves this by:
-
-- ✔ online learning  
-- ✔ no supervision  
-- ✔ no retraining  
-- ✔ sub-second reaction timing  
+  
+✔ **Online learning in nonstationary environments**  
+✔ **No supervision or labels required**  
+✔ **No retraining or fine-tuning needed**  
+✔ **Sub-second response and change detection**
+✔ **Works in domains where human + machine co-adapt**
 
 ---
 
@@ -65,7 +67,7 @@ This structure is **domain-agnostic** — swapping input features yields new app
 ## ✨ What the repo includes
 
 - A pluggable HTM engine backend  
-- Online state estimator  
+- Online state estimator (EMA/Fusion) 
 - Growth-based spike detector  
 - Detection lag metric  
 - Live streaming visualizer  
@@ -77,7 +79,8 @@ This structure is **domain-agnostic** — swapping input features yields new app
 
 # 🔬 Demo 1 — Real-Time Workload Transition Detection
 
-This first demo illustrates HTM-State applied to **pilot-style operator workload dynamics**.
+This first demo illustrates HTM-State applied to **pilot-style psychomotor workload dynamics**  
+(e.g., UAV control, piloting, teleoperation, manual tracking tasks).
 
 ### ✈️ Scenario
 
@@ -93,6 +96,11 @@ There is **no training data** and **no supervision**.
 > Can the system autonomously detect this internal mode change just from streaming behavior?
 
 ✔ Yes — with detection lag ≈ **0.5 seconds** at 10 Hz.
+
+This is significant because:
+* conventional anomaly detectors require retraining
+* supervised workload models need labeled sessions
+* HTM-State learns on the fly and adapts autonomously
 
 ---
 
@@ -145,14 +153,18 @@ Spikes at transition points reflect **detected workload shifts**.
 ![HTM-State Demo 1 Live Transition](docs/gifs/demo1.gif)
 
 *HTM-State continuously learns operator behavior in real time.  
-This animation shows a workload transition (change in control dynamics) —  
-the spike marker indicates when the system **recognizes the behavioral shift**  
-and rapidly stabilizes into the new mode without retraining.*
+This visualization shows the workload regime transition and HTM-State’s spike response:
+
+* blue line → system’s real-time state estimate  
+* orange marker → recognition of regime shift  
+
+Detection occurs **within half a second**, without any offline learning.
+
 ---
 
 ## 🧠 Why Demo 1 matters
 
-This validates:
+Demo 1 validates:
 
 - ✔ online learning  
 - ✔ unsupervised change detection  
@@ -161,6 +173,11 @@ This validates:
 - ✔ generality of approach  
 
 This forms the baseline for domain expansion.
+# 🚀 What Demo 1 proves
+
+✔ HTM-State reacts in sub-second time  
+✔ It requires **no labeled training data**  
+✔ It adapts online like a human observer
 
 ---
 
@@ -220,6 +237,11 @@ Future collaborators welcome —
 especially for new datasets in cyber, healthcare, robotics, or autonomy.
 
 ---
+
+# 📌 Want to collaborate?
+
+If you are interested in safety monitoring, autonomy, performance assessment,  
+pilot modeling, cybersecurity drift detection, or cognitive systems — get in touch.
 
 # 📧 Contact / Project Lead
 
