@@ -40,7 +40,7 @@ HTM-State solves this by:
 ✔ **Online learning in nonstationary environments**  
 ✔ **No supervision or labels required**  
 ✔ **No retraining or fine-tuning needed**  
-✔ **Sub-second response and change detection**
+✔ **Sub-second response and change detection**  
 ✔ **Works in domains where human + machine co-adapt**
 
 ---
@@ -173,12 +173,13 @@ Demo 1 validates:
 - ✔ generality of approach  
 
 This validates HTM-State as a domain-agnostic adaptive inference engine.
+
 # 🚀 What Demo 1 proves
 
 ✔ HTM-State reacts in sub-second time  
 ✔ It requires **no labeled training data**  
-✔ It adapts online like a human observer
-✔ It generalizes across domains — workload today, cyber and healthcare tomorrow  
+✔ It adapts online like a human observer  
+✔ It generalizes across domains — workload today, cyber and healthcare tomorrow   
 
 ---
 
