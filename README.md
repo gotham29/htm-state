@@ -154,7 +154,7 @@ This is significant because:
 
 ---
 
-## 💻 Running Demo 1 (Offline Evaluation)
+### 💻 Offline Evaluation
 
 ```bash
 python -m scripts.offline_demo_detection_lag \
@@ -260,7 +260,7 @@ Ground-truth boundary times are marked visually with **vertical dashed red lines
 
 ✔ Yes — it learns online and responds autonomously.
 
-### 📊 Offline Evaluation Output
+### 💻  Offline Evaluation
 
 Example:
 
@@ -372,7 +372,7 @@ The intent mirrors Demos 1 & 2:
 
 ---
 
-### 📊 Planned Offline Evaluation
+### 💻 Offline Evaluation (planned)
 
 The healthcare demo will reuse the **same pipeline** as workload and cyber:
 
