@@ -229,6 +229,33 @@ Live visualization shows:
 
 This demonstrates **domain generality** —  
 HTM-State adapts online whether its input is human control or network behavior.
+
+---
+
+## 🎥 Demo 2 — Cyber Drift Live Animations
+
+Three short sequences illustrate how HTM-State responds to each drift boundary:
+
+<p align="center">
+  <img src="docs/gifs/demo2_50s.gif" width="950"/>
+</p>
+
+<p align="center">
+  <img src="docs/gifs/demo2_100s.gif" width="950"/>
+</p>
+
+<p align="center">
+  <img src="docs/gifs/demo2_150s.gif" width="950"/>
+</p>
+
+**Interpretation**
+
+- Orange dots = HTM-State drift response  
+- Red dashed line = true drift boundary  
+- Magenta bar = detection latency (typically ~3–7 s @ 10 Hz)  
+
+👉 **Same core algorithm as Demo 1 — completely different domain — no retraining required.**
+
 ---
 
 # 🏥 Demo 3 — Healthcare Operator Workload *(coming soon)*
