@@ -152,6 +152,16 @@ class LiveDemo:
         self.spike_ts: List[float] = []
         self.spike_states: List[float] = []
 
+        # Ground-truth workload transition (synthetic demo: midpoint toggle)
+        mid_idx = len(self.df) // 2
+        self.toggle_time: float = float(self.df["t"].iloc[mid_idx])
+        self.det_time: float | None = None
+        self.det_lag_sec: float | None = None
+
+        # Artists for truth and lag overlays
+        self._truth_artists = []
+        self._lag_artists = []
+
         # set up matplotlib figure
         self.fig, (self.ax_top, self.ax_bottom) = plt.subplots(2, 1, sharex=True, figsize=(10, 6))
         self.fig.suptitle("HTM State Live Demo (Synthetic Workload)")
@@ -184,6 +194,15 @@ class LiveDemo:
             line.set_data([], [])
         self.state_line.set_data([], [])
         self.spike_line.set_data([], [])
+        # clear any previous truth/lag artists
+        for ln in self._truth_artists + self._lag_artists:
+            try:
+                ln.remove()
+            except Exception:
+                pass
+        self._truth_artists = []
+        self._lag_artists = []
+
         return (*self.control_lines, self.state_line, self.spike_line)
 
     def update(self, frame):
@@ -203,6 +222,15 @@ class LiveDemo:
         spike_res = self.spike_detector.update(state)
         spike_flag = spike_res["spike"]
         growth_pct = spike_res["growth_pct"]
+
+        # If this is the first spike after the true transition, record detection time
+        if (
+            spike_flag
+            and self.det_time is None
+            and t >= self.toggle_time
+        ):
+            self.det_time = t
+            self.det_lag_sec = self.det_time - self.toggle_time
 
         # append to buffers
         self.ts.append(t)
@@ -242,6 +270,63 @@ class LiveDemo:
         self.state_line.set_data(ts_window, states_window)
         self.spike_line.set_data(spike_ts_window, spike_states_window)
 
+        # Remove previous truth/lag artists
+        for ln in self._truth_artists + self._lag_artists:
+            try:
+                ln.remove()
+            except Exception:
+                pass
+        self._truth_artists = []
+        self._lag_artists = []
+
+        # Draw workload transition truth + detection lag if in view
+        if ts_window and states_window:
+            t_start, t_end = ts_window[0], ts_window[-1]
+            y_min = min(states_window)
+            y_max = max(states_window)
+            y_span = max(1e-9, y_max - y_min)
+            y_level = y_min + 0.05 * y_span  # lag bar near bottom
+
+            # True transition line
+            if t_start <= self.toggle_time <= t_end:
+                label = "true workload transition" if not self._truth_artists else "_nolegend_"
+                ln = self.ax_bottom.axvline(
+                    self.toggle_time,
+                    color="red",
+                    linestyle="--",
+                    alpha=0.5,
+                    label=label,
+                )
+                self._truth_artists.append(ln)
+
+            # Detection lag bar + label
+            if (
+                self.det_time is not None
+                and t_start <= self.toggle_time <= t_end
+                and t_start <= self.det_time <= t_end
+            ):
+                label = "detection lag" if not self._lag_artists else "_nolegend_"
+                lag_line = self.ax_bottom.plot(
+                    [self.toggle_time, self.det_time],
+                    [y_level, y_level],
+                    color="magenta",
+                    linestyle="-",
+                    alpha=0.8,
+                    label=label,
+                )[0]
+                self._lag_artists.append(lag_line)
+
+                txt = self.ax_bottom.text(
+                    self.det_time,
+                    y_level,
+                    f"{self.det_lag_sec:.1f}s",
+                    fontsize=8,
+                    ha="center",
+                    va="bottom",
+                    color="magenta",
+                )
+                self._lag_artists.append(txt)
+
         # update axes limits
         if ts_window:
             self.ax_top.set_xlim(ts_window[0], ts_window[-1])
@@ -257,7 +342,13 @@ class LiveDemo:
         # simulate real-time pacing
         time.sleep(1.0 / self.rate_hz)
 
-        return (*self.control_lines, self.state_line, self.spike_line)
+        return (
+            *self.control_lines,
+            self.state_line,
+            self.spike_line,
+            *self._truth_artists,
+            *self._lag_artists,
+        )
 
 
 def main():

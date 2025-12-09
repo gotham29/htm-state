@@ -47,19 +47,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--spike-recent-sec",
         type=float,
-        default=6.0,
+        default=2.0,
         help="Recent window size in seconds for spike detector.",
     )
     parser.add_argument(
         "--spike-prior-sec",
         type=float,
-        default=15.0,
+        default=6.0,
         help="Prior window size in seconds for spike detector.",
     )
     parser.add_argument(
         "--spike-threshold-pct",
         type=float,
-        default=40.0,
+        default=30.0,
         help="Growth %% threshold for spike detector.",
     )
     parser.add_argument(
@@ -180,6 +180,26 @@ class CyberLiveDemo:
         self.spike_ts: List[float] = []
         self.spike_states: List[float] = []
 
+        # Ground-truth drift boundaries learned from the dataframe
+        self.drift_info: List[Dict] = []
+        for i, row in self.df.iterrows():
+            if "is_drift_boundary" in self.df.columns and int(row["is_drift_boundary"]) == 1:
+                t = float(row["t"])
+                self.drift_info.append(
+                    {
+                        "boundary_step": i,
+                        "boundary_time": t,
+                        "det_step": None,
+                        "det_time": None,
+                        "lag_sec": None,
+                    }
+                )
+        self.next_drift_idx: int = 0
+
+        # Artists for drift boundaries and lag overlays
+        self.drift_artists: List = []
+        self.lag_artists: List = []
+
         # Matplotlib figure
         self.fig, (self.ax_top, self.ax_bottom) = plt.subplots(
             2, 1, sharex=True, figsize=(10, 6)
@@ -216,6 +236,15 @@ class CyberLiveDemo:
             ln.remove()
         self.drift_artists = []
 
+        # clear any previously drawn drift/lag artists
+        for ln in self.drift_artists + self.lag_artists:
+            try:
+                ln.remove()
+            except Exception:
+                pass
+        self.drift_artists = []
+        self.lag_artists = []
+
         return (*self.feature_lines, self.state_line, self.spike_line)
 
     def update(self, frame):
@@ -234,6 +263,15 @@ class CyberLiveDemo:
         # Spike detector on the state
         spike_res = self.spike_detector.update(state)
         spike_flag = spike_res["spike"]
+
+        # If we see a spike and have a pending drift, record first detection time
+        if spike_flag and self.next_drift_idx < len(self.drift_info):
+            info = self.drift_info[self.next_drift_idx]
+            if self._idx >= info["boundary_step"] and info["det_step"] is None:
+                info["det_step"] = self._idx
+                info["det_time"] = t
+                info["lag_sec"] = max(0.0, t - info["boundary_time"])
+                self.next_drift_idx += 1
 
         # Append to buffers
         self.ts.append(t)
@@ -290,6 +328,62 @@ class CyberLiveDemo:
         self.state_line.set_data(ts_window, states_window)
         self.spike_line.set_data(spike_ts_window, spike_states_window)
 
+        # Remove previous drift/lag artists
+        for ln in self.drift_artists + self.lag_artists:
+            try:
+                ln.remove()
+            except Exception:
+                pass
+        self.drift_artists = []
+        self.lag_artists = []
+
+        # Draw ground-truth drift boundaries + detection lag bars within window
+        if ts_window and states_window:
+            t_start, t_end = ts_window[0], ts_window[-1]
+            y_min = min(states_window)
+            y_max = max(states_window)
+            y_span = max(1e-9, y_max - y_min)
+            # put lag bars slightly above the bottom of the state range
+            y_level = y_min + 0.05 * y_span
+
+            for info in self.drift_info:
+                bt = info["boundary_time"]
+                dt = info["det_time"]
+                lag_sec = info["lag_sec"]
+
+                # vertical drift boundary
+                if t_start <= bt <= t_end:
+                    label = "drift boundary" if not self.drift_artists else "_nolegend_"
+                    ln = self.ax_bottom.axvline(
+                        bt, color="red", linestyle="--", alpha=0.5, label=label
+                    )
+                    self.drift_artists.append(ln)
+
+                # detection lag bar + label
+                if dt is not None and t_start <= dt <= t_end and t_start <= bt <= t_end:
+                    label = "detection lag" if not self.lag_artists else "_nolegend_"
+                    lag_line = self.ax_bottom.plot(
+                        [bt, dt],
+                        [y_level, y_level],
+                        color="magenta",
+                        linestyle="-",
+                        alpha=0.8,
+                        label=label,
+                    )[0]
+                    self.lag_artists.append(lag_line)
+
+                    # numeric lag label next to the detection point
+                    txt = self.ax_bottom.text(
+                        dt,
+                        y_level,
+                        f"{lag_sec:.1f}s",
+                        fontsize=8,
+                        ha="center",
+                        va="bottom",
+                        color="magenta",
+                    )
+                    self.lag_artists.append(txt)
+
         # Update axes limits
         if ts_window:
             self.ax_top.set_xlim(ts_window[0], ts_window[-1])
@@ -305,7 +399,13 @@ class CyberLiveDemo:
         # Real-time pacing
         time.sleep(1.0 / self.rate_hz)
 
-        return (*self.feature_lines, self.state_line, self.spike_line, *self.drift_artists)
+        return (
+            *self.feature_lines,
+            self.state_line,
+            self.spike_line,
+            *self.drift_artists,
+            *self.lag_artists,
+        )
 
 
 def main():

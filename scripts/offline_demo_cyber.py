@@ -37,19 +37,19 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--spike-recent-sec",
         type=float,
-        default=3.0,
+        default=2.0,
         help="Recent window size in seconds for spike detector.",
     )
     p.add_argument(
         "--spike-prior-sec",
         type=float,
-        default=8.0,
+        default=6.0,
         help="Prior window size in seconds for spike detector.",
     )
     p.add_argument(
         "--spike-threshold-pct",
         type=float,
-        default=40.0,
+        default=30.0,
         help="Growth %% threshold for spike detector.",
     )
     p.add_argument(
