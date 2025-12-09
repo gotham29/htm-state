@@ -202,13 +202,19 @@ Spikes at transition points reflect **detected workload shifts**.
 
 ![HTM-State Demo 1 Live Transition](docs/gifs/demo1.gif)
 
-*HTM-State continuously learns operator behavior in real time.*  
-This visualization shows the workload regime transition and HTM-State’s spike response:
+*HTM-State continuously learns operator behavior in real time.*
 
-* blue line → system’s real-time state estimate  
-* orange marker → recognition of regime shift  
+### 🔎 Interpretation
 
-Detection occurs **within ~1–2 seconds**, without any offline learning or calibration.
+✔ **Blue curve** — estimated workload state  
+✔ **Orange spikes** — detected regime shift  
+
+### ✅ What good detection looks like
+✔ transition spike occurs shortly after the real change  
+✔ few false alarms outside transition period  
+
+### 📌 Takeaway  
+Detection occurs **within ~1–2 seconds**, without offline training or calibration.
 
 ---
 
@@ -235,8 +241,8 @@ This validates HTM-State as a domain-agnostic adaptive inference engine.
 
 ## 🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
 
-Cyber systems drift continuously — sometimes without full attack signatures.
-This demo applies HTM-State to live streaming packet-flow features derived from UNSW-NB15.
+Cyber systems drift continuously — sometimes without explicit attack signatures.  
+This demo applies HTM-State to **streaming packet-flow behavior** derived from UNSW-NB15.
 
 ### 🔍 Scenario
 
@@ -275,7 +281,7 @@ Drift 0: boundary at step 500 (t=50.000s) → detected at step 535 (t=53.500s), 
 Drift 1: boundary at step 1000 (t=100.000s) → detected at step 1073 (t=107.300s), lag = 73 steps (7.300 s)
 Drift 2: boundary at step 1500 (t=150.000s) → detected at step 1534 (t=153.400s), lag = 34 steps (3.400 s)
 
-Average detection lag over 3 drifts: 4.7 s
+Average detection lag over 3 drifts: **4.7 s**
 ```
 
 This represents **model-free cyber drift detection** using the same core pipeline that detected human workload changes.
@@ -305,7 +311,7 @@ HTM-State adapts online whether its input is human control or network behavior.
 
 ## 🎥 Demo 2 — Cyber Drift Live Animations
 
-Three short sequences illustrate how HTM-State responds to each drift boundary:
+Three short sequences illustrate how HTM-State responds to each true drift boundary:
 
 <p align="center">
   <img src="docs/gifs/demo2_50s.gif" width="950"/>
@@ -319,21 +325,87 @@ Three short sequences illustrate how HTM-State responds to each drift boundary:
   <img src="docs/gifs/demo2_150s.gif" width="950"/>
 </p>
 
-**Interpretation**
+### 🔎 Interpretation  
 
-- Orange dots = HTM-State drift response  
-- Red dashed line = true drift boundary  
-- Magenta bar = detection latency (typically ~3–7 s @ 10 Hz)  
+✔ **Orange dots** — detected drift spikes  
+✔ **Red dashed line** — true drift boundary  
+✔ **Magenta bar** — lag from boundary → detection  
 
-👉 **Same core algorithm as Demo 1 — completely different domain — no retraining required.**
+### ✅ What good detection looks like
+✔ spikes appear very close to the red line  
+✔ magenta bars are short  
+
+### ⚠️ Failure modes to watch for
+❌ spikes appear far after the red line → slow reaction  
+❌ repeated spikes with no boundary → false positives  
+
+### 📌 Takeaway  
+👉 **Same pipeline as Demo 1 — different domain — no retraining required.**
 
 ---
 
 # 🏥 Demo 3 — Healthcare Operator Workload *(coming soon)*
 
-- ICU nurse / surgical motion workload detection  
-- Real-time fatigue shift / performance change monitoring  
-- Valuable for patient safety, staffing load, augmented reality assistive systems  
+This planned demo will apply HTM-State to **clinical operator behavior**  
+— for example ICU nurses, surgeons, or interventionalists — to detect shifts in  
+moment-to-moment workload and performance.
+
+### 🩺 Scenario (planned)
+
+- Continuous motion / interaction features (e.g., tool motion, cursor motion, gaze)  
+- Periods of routine activity vs. high-acuity events (e.g., crisis, complex maneuver)  
+- No labeled workload scores at run time — just behavior streams  
+
+### 📌 Question
+
+> Can HTM-State surface **emerging overload or performance change**  
+> fast enough to support safety and staffing decisions?
+
+The intent mirrors Demos 1 & 2:
+
+- learn **online** from the operator’s behavior  
+- detect **transitions** in workload / performance state  
+- report **detection latency** in seconds  
+
+### 📊 Planned Evaluation
+
+The healthcare demo will reuse the **same pipeline** as workload and cyber:
+
+1. Encode behavioral / motion signals into HTM input features  
+2. Run anomaly → EMA state → spike detector  
+3. Compare spike times to known regime changes (e.g., annotated events)  
+4. Report detection lags and false-alarm behavior  
+
+Once the dataset and scripts are finalized, this section will include:
+
+- offline evaluation CLI (e.g., `scripts.offline_demo_healthcare`)  
+- representative detection-lag output  
+
+### 📈 Planned Live Visualization
+
+The live demo will mirror the existing visuals:
+
+- top panel — selected motion / interaction features  
+- bottom panel — HTM state, spikes, and ground-truth change markers  
+- magenta lag bars to show **time from event → detection**  
+
+Short GIFs (like Demo 1 & 2) will be added here once the demo is recorded.
+
+### 🧠 Why Demo 3 matters
+
+Demo 3 will extend HTM-State into **high-stakes human–in-the-loop** settings:
+
+- early visibility into operator overload / fatigue  
+- continuous performance drift monitoring without labels  
+- a single pipeline that spans **pilots → cyber analysts → clinicians**  
+
+It is designed as a bridge toward real deployments in:
+
+- patient safety and quality improvement  
+- staffing and acuity-aware scheduling  
+- AR/VR assistance and training feedback  
+
+---
 
 ---
 
