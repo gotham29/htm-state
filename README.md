@@ -89,6 +89,7 @@ This structure is **domain-agnostic** — swapping input features yields new app
 - Live streaming visualizer  
 - Offline evaluation tool  
 - Synthetic workload dataset  
+- A reusable demo spec template (`docs/demo_template.md`) for new domains  
 - A path to multiple domain demos  
 
 ---
@@ -121,8 +122,7 @@ python -m scripts.live_demo_cyber \
     --rate-hz 10
 ```
 
-Once those are working, you can tweak spike detector and HTM parameters via the CLI flags in each cript to explore different sensitivities and response speeds.
-@@
+Once those are working, you can tweak spike detector and HTM parameters via the CLI flags in each script to explore different sensitivities and response speeds.
 
 ---
 
@@ -344,17 +344,24 @@ Three short sequences illustrate how HTM-State responds to each true drift bound
 
 ---
 
-# 🏥 Demo 3 — Healthcare Operator Workload *(coming soon)*
+# 🏥 Demo 3 — Healthcare Operator Workload *(planned)*
 
 This planned demo will apply HTM-State to **clinical operator behavior**  
 — for example ICU nurses, surgeons, or interventionalists — to detect shifts in  
-moment-to-moment workload and performance.
+moment-to-moment workload and performance using the **same HTM-State pipeline**  
+as the workload and cyber demos.
+
+---
 
 ### 🩺 Scenario (planned)
 
-- Continuous motion / interaction features (e.g., tool motion, cursor motion, gaze)  
-- Periods of routine activity vs. high-acuity events (e.g., crisis, complex maneuver)  
-- No labeled workload scores at run time — just behavior streams  
+- Continuous motion / interaction features  
+  (e.g., tool motion, cursor motion, gaze, device interaction)  
+- Periods of routine activity vs. high-acuity events  
+  (e.g., crisis, complex maneuver, high cognitive load)  
+- No labeled workload scores at run time — only behavior streams  
+
+---
 
 ### 📌 Question
 
@@ -363,11 +370,13 @@ moment-to-moment workload and performance.
 
 The intent mirrors Demos 1 & 2:
 
-- learn **online** from the operator’s behavior  
+- learn **online** from operator behavior  
 - detect **transitions** in workload / performance state  
 - report **detection latency** in seconds  
 
-### 📊 Planned Evaluation
+---
+
+### 📊 Planned Offline Evaluation
 
 The healthcare demo will reuse the **same pipeline** as workload and cyber:
 
@@ -378,18 +387,23 @@ The healthcare demo will reuse the **same pipeline** as workload and cyber:
 
 Once the dataset and scripts are finalized, this section will include:
 
-- offline evaluation CLI (e.g., `scripts.offline_demo_healthcare`)  
-- representative detection-lag output  
+- offline evaluation CLI (e.g., `python -m scripts.offline_demo_healthcare`)  
+- representative detection-lag output (similar to Demos 1 & 2)  
+
+---
 
 ### 📈 Planned Live Visualization
 
 The live demo will mirror the existing visuals:
 
-- top panel — selected motion / interaction features  
-- bottom panel — HTM state, spikes, and ground-truth change markers  
-- magenta lag bars to show **time from event → detection**  
+- **Top panel** — selected motion / interaction features  
+- **Bottom panel** — HTM state, spikes, and ground-truth change markers  
+- **Magenta lag bars** — time from event → detection  
 
-Short GIFs (like Demo 1 & 2) will be added here once the demo is recorded.
+Short GIFs (like Demos 1 & 2) will be added here once the demo is recorded  
+and will follow the same interpretation structure (good detection vs. failure modes).
+
+---
 
 ### 🧠 Why Demo 3 matters
 
@@ -403,8 +417,8 @@ It is designed as a bridge toward real deployments in:
 
 - patient safety and quality improvement  
 - staffing and acuity-aware scheduling  
-- AR/VR assistance and training feedback  
-
+- AR/VR assistance and training feedback 
+@@
 ---
 
 ---
