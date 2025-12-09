@@ -298,7 +298,8 @@ Live visualization shows:
 
 This demonstrates domain generality —
 HTM-State adapts online whether its input is human control or network behavior.
-```
+
+---
 
 ---
 
@@ -309,9 +310,11 @@ Three short sequences illustrate how HTM-State responds to each drift boundary:
 <p align="center">
   <img src="docs/gifs/demo2_50s.gif" width="950"/>
 </p>
+
 <p align="center">
   <img src="docs/gifs/demo2_100s.gif" width="950"/>
 </p>
+
 <p align="center">
   <img src="docs/gifs/demo2_150s.gif" width="950"/>
 </p>
