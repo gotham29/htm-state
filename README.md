@@ -182,7 +182,7 @@ That represents near-real-time awareness without supervision.
 
 ---
 
-## 🎥 Live Visualization
+### 🎥 Live Visualization
 
 ```bash
 python -m scripts.live_demo_state --backend htm --rate-hz 10
@@ -198,7 +198,6 @@ Spikes at transition points reflect **detected behavioral state shifts**.
 > Additional small spikes typically represent exploratory deviations or behavioral anomalies — useful for safety monitoring and drift awareness.
 
 ---
-## 🎥 Demo 1 — Live Transition Animation
 
 ![HTM-State Demo 1 Live Transition](docs/gifs/demo1.gif)
 
@@ -218,7 +217,7 @@ Detection occurs **within ~1–2 seconds**, without offline training or calibrat
 
 ---
 
-## 🧠 Why Demo 1 matters
+### 🧠 Why Demo 1 matters
 
 Demo 1 validates:
 
@@ -230,7 +229,7 @@ Demo 1 validates:
 
 This validates HTM-State as a domain-agnostic adaptive inference engine.
 
-## 🚀 What Demo 1 proves
+### 🚀 What Demo 1 proves
 
 ✔ HTM-State reacts in sub-second time  
 ✔ It requires **no labeled training data**  
@@ -286,7 +285,7 @@ Average detection lag over 3 drifts: **4.7 s**
 
 This represents **model-free cyber drift detection** using the same core pipeline that detected human workload changes.
 
-### 📈 Live Visualization (Demo 2)
+### 🎥 Live Visualization
 
 ```bash
 python -m scripts.live_demo_cyber \
@@ -308,9 +307,6 @@ HTM-State adapts online whether its input is human control or network behavior.
 ---
 
 ---
-
-## 🎥 Demo 2 — Cyber Drift Live Animations
-
 Three short sequences illustrate how HTM-State responds to each true drift boundary:
 
 <p align="center">
