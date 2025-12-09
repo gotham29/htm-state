@@ -95,7 +95,8 @@ There is **no training data** and **no supervision**.
 
 > Can the system autonomously detect this internal mode change just from streaming behavior?
 
-✔ Yes — with detection lag ≈ **0.5 seconds** at 10 Hz.
+✔ Yes — with detection lag typically around **1–2 seconds** at 10 Hz,
+depending on spike sensitivity parameters.
 
 This is significant because:
 * conventional anomaly detectors require retraining
@@ -158,7 +159,7 @@ This visualization shows the workload regime transition and HTM-State’s spike 
 * blue line → system’s real-time state estimate  
 * orange marker → recognition of regime shift  
 
-Detection occurs **within half a second**, without any offline learning.
+Detection occurs **within ~1–2 seconds**, without any offline learning or calibration.
 
 ---
 
@@ -183,14 +184,51 @@ This validates HTM-State as a domain-agnostic adaptive inference engine.
 
 ---
 
-# 🚧 Demo 2 — Cyber Behavioral Drift Detection *(coming soon)*
+## 🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
 
-- Feature input: packet statistics, flow features, sequence patterns  
-- Goal: detect stealthy gradual intrusions  
-- Expected behavior: HTM-State reacts before classifiers flag attack states  
+Cyber systems drift continuously — sometimes without full attack signatures.
+This demo applies HTM-State to live streaming packet-flow features derived from UNSW-NB15.
 
-> This demo will illustrate how the same pipeline detects shifts in network behavior without oracles.
+### 🔍 Scenario
 
+We generate a streaming sequence with three true drift boundaries:
+
+* stable period  
+* small statistical change  
+* larger behavioral shift  
+
+Ground-truth boundary times are marked visually with **vertical dashed red lines**.
+
+### 📌 Question
+
+> Can HTM-State detect emerging cyber behavior shifts  
+> *without* retraining, classifiers, or labels?
+
+✔ Yes — it learns online and responds autonomously.
+
+### 📊 Offline Evaluation Output
+
+Example:
+
+```
+3 drift boundaries
+average detection lag ≈ 4.7 seconds @ 10 Hz
+```
+
+This represents **model-free cyber drift detection** using the same core pipeline that detected human workload changes.
+
+### 📈 Interactive View
+
+Live visualization shows:
+
+- network features  
+- HTM state evolution  
+- true boundaries (red dashed lines)  
+- detected spikes (orange dots)  
+- measured detection lag (magenta annotations)
+
+This demonstrates **domain generality** —  
+HTM-State adapts online whether its input is human control or network behavior.
 ---
 
 # 🏥 Demo 3 — Healthcare Operator Workload *(coming soon)*
