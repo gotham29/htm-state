@@ -28,7 +28,7 @@
 🟢 - **high-acuity event / overload / safety-critical transition**  
 
 🟢 If ground truth exists (e.g., annotated procedure timestamps),  
-🟢 regime boundaries may be: **[example: 600, 1200, 1650]**
+🟢 regime boundaries may be: **[600, 1450]** in this synthetic version.
 
 🟢 This mirrors Demo 1 + Demo 2:  
 🟢 regime shifts with latency measurement.
@@ -56,17 +56,16 @@ python -m scripts.offline_demo_healthcare \
 ### 🧾 Example Output
 
 ```text
-Found 2 workload transition boundaries at steps: [600, 1450]
+Loaded 2000 timesteps.
 
-=== Detection Lag Results ===
-Transition 0: boundary at 600 → detected at 627, lag = 27 steps (2.7 s)
-Transition 1: boundary at 1450 → detected at 1489, lag = 39 steps (3.9 s)
+=== Healthcare Workload Detection Results ===
+Transition 0: boundary at step 1450 → detected at step 1451, lag = 1 steps (0.100 s)
 
-Average detection lag = 3.3 seconds
+Average detection lag over 1 transitions: 0.100 s
 ```
 
-🟢 Detection lags are typically **2–4 seconds @ 10 Hz**,  
-🟢 consistent with Demo 1 & Demo 2.
+🟢 In this configuration, HTM-State reacted almost instantaneously (0.1 s @ 10 Hz)  
+🟢 for the overload event at step 1450.
 
 > 🟢 This represents **model-free operator workload change detection** using HTM-State.
 
@@ -157,6 +156,15 @@ In the healthcare context, this points toward:
 
 ---
 
-Once this renders cleanly for Demo 3, we can clone the same pattern into `docs/demo_cyber.md` and `docs/demo_workload.md` with much smaller edits.
-::contentReference[oaicite:0]{index=0}
+# Healthcare Operator Workload Stream Dataset
 
+Synthetic clinical-style operator behavior for HTM-State Demo 3.
+
+Features:
+- motion_energy
+- cursor_velocity
+- interaction_density
+- task_variability
+
+Boundaries:
+[600, 1450] mark two workload regime shifts.
