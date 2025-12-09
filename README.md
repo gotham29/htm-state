@@ -25,7 +25,7 @@ behavioral pattern drift, safety monitoring, or cognitive state awareness is nee
 - [🔁 Core Architecture](#-core-architecture)
 - [✨ What the repo includes](#-what-the-repo-includes)
 - [⚡ Quickstart](#-quickstart)
-- [🔬 Demo 1 — Real-Time Workload Transition Detection](#-demo-1--real-time-workload-transition-detection)
+- [🔬 Demo 1 — Real-Time Behavioral State Transition Detection (Synthetic Control Task)](#-demo-1--behavioral-state-transition-detection-synthetic-control-task)
 - [🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)](#-demo-2--cyber-behavior-drift-detection-unsw-nb15)
 - [🏥 Demo 3 — Healthcare Operator Workload (coming soon)](#-demo-3--healthcare-operator-workload-coming-soon)
 - [🛠 Architecture Components](#-architecture-components)
@@ -104,7 +104,7 @@ conda activate htm_env
 # 2) Install dependencies (from repo root)
 pip install -r requirements.txt
 
-# 3) Run Demo 1 (workload)
+# 3) Run Demo 1 (synthetic regime shift demo)
 python -m scripts.offline_demo_detection_lag \
     --csv demos/workload_demo/synthetic_workload.csv \
     --backend htm \
@@ -126,9 +126,9 @@ Once those are working, you can tweak spike detector and HTM parameters via the 
 
 ---
 
-# 🔬 Demo 1 — Real-Time Workload Transition Detection
+# 🔬 Demo 1 — Behavioral State Transition Detection (Synthetic Control Task)
 
-This first demo illustrates HTM-State applied to **pilot-style psychomotor workload dynamics**  
+This first demo illustrates HTM-State applied to **synthetic pilot-style behavioral dynamics**  
 (e.g., UAV control, piloting, teleoperation, manual tracking tasks).
 
 ### ✈️ Scenario
@@ -174,7 +174,7 @@ Detection lag: 0.500 s at 10 Hz
 
 ### ➤ Interpretation (Demo 1)
 
-HTM-State detects the workload shift  
+HTM-State detects the behavioral state shift  
 **within half a second**  
 of its onset.
 
@@ -447,11 +447,11 @@ Measures adaptation time — critical in safety systems.
 
 | Phase  | Target                       |
 |-------|------------------------------|
-| Demo 1 | pilot workload transition    |
-| Demo 2 | cyber drift detection        |
-| Demo 3 | healthcare workload          |
-| Demo 4 | industrial predictive change |
-| Demo 5 | UAV safety horizon estimation |
+| Demo 1 | synthetic control state transition    |
+| Demo 2 | cyber drift detection                 |
+| Demo 3 | healthcare workload                   |
+| Demo 4 | industrial predictive change          |
+| Demo 5 | UAV safety horizon estimation         |
 
 ---
 
