@@ -172,7 +172,7 @@ Detection lag: 5 steps
 Detection lag: 0.500 s at 10 Hz
 ```
 
-### ➤ Interpretation (Demo 1)
+### ➤ Interpretation
 
 HTM-State detects the behavioral state shift  
 **within half a second**  
@@ -388,7 +388,7 @@ Once the dataset and scripts are finalized, this section will include:
 
 ---
 
-### 📈 Planned Live Visualization
+### 🎥 Live Visualization (planned)
 
 The live demo will mirror the existing visuals:
 
