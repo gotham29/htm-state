@@ -19,6 +19,22 @@ behavioral pattern drift, safety monitoring, or cognitive state awareness is nee
 
 ---
 
+## 📚 Contents
+
+- [🌍 Why HTM-State exists](#-why-htm-state-exists)
+- [🔁 Core Architecture](#-core-architecture)
+- [✨ What the repo includes](#-what-the-repo-includes)
+- [⚡ Quickstart](#-quickstart)
+- [🔬 Demo 1 — Real-Time Workload Transition Detection](#-demo-1--real-time-workload-transition-detection)
+- [🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)](#-demo-2--cyber-behavior-drift-detection-unsw-nb15)
+- [🏥 Demo 3 — Healthcare Operator Workload (coming soon)](#-demo-3--healthcare-operator-workload-coming-soon)
+- [🛠 Architecture Components](#-architecture-components)
+- [📦 Development Roadmap](#-development-roadmap)
+- [🤝 Contributing](#-contributing)
+- [📧 Contact / Project Lead](#-contact--project-lead)
+
+---
+
 ## 🌍 Why HTM-State exists
 
 Conventional ML assumes:
@@ -77,6 +93,39 @@ This structure is **domain-agnostic** — swapping input features yields new app
 
 ---
 
+# ⚡ Quickstart
+
+```bash
+# 1) Create & activate env (example)
+conda create -n htm_env python=3.9 -y
+conda activate htm_env
+
+# 2) Install dependencies (from repo root)
+pip install -r requirements.txt
+
+# 3) Run Demo 1 (workload)
+python -m scripts.offline_demo_detection_lag \
+    --csv demos/workload_demo/synthetic_workload.csv \
+    --backend htm \
+    --rate-hz 10
+
+python -m scripts.live_demo_state --backend htm --rate-hz 10
+
+# 4) Run Demo 2 (cyber drift)
+python -m scripts.offline_demo_cyber \
+    --csv demos/cyber_demo/unsw_cyber_stream.csv \
+    --rate-hz 10
+
+python -m scripts.live_demo_cyber \
+    --csv demos/cyber_demo/unsw_cyber_stream.csv \
+    --rate-hz 10
+```
+
+Once those are working, you can tweak spike detector and HTM parameters via the CLI flags in each cript to explore different sensitivities and response speeds.
+@@
+
+---
+
 # 🔬 Demo 1 — Real-Time Workload Transition Detection
 
 This first demo illustrates HTM-State applied to **pilot-style psychomotor workload dynamics**  
@@ -95,8 +144,8 @@ There is **no training data** and **no supervision**.
 
 > Can the system autonomously detect this internal mode change just from streaming behavior?
 
-✔ Yes — with detection lag typically around **1–2 seconds** at 10 Hz,
-depending on spike sensitivity parameters.
+✔ Yes — with detection lag typically around **1–2 seconds** at 10 Hz  
+depending on spike sensitivity parameters. A representative run is shown below.
 
 This is significant because:
 * conventional anomaly detectors require retraining
@@ -123,7 +172,7 @@ Detection lag: 5 steps
 Detection lag: 0.500 s at 10 Hz
 ```
 
-### ➤ Interpretation
+### ➤ Interpretation (Demo 1)
 
 HTM-State detects the workload shift  
 **within half a second**  
@@ -210,25 +259,46 @@ Ground-truth boundary times are marked visually with **vertical dashed red lines
 
 Example:
 
+```bash
+python -m scripts.offline_demo_cyber \
+    --csv demos/cyber_demo/unsw_cyber_stream.csv \
+    --rate-hz 10
 ```
-3 drift boundaries
-average detection lag ≈ 4.7 seconds @ 10 Hz
+
+Example output:
+
+```text
+Found 3 drift boundaries at steps: [500, 1000, 1500]
+
+=== Drift Detection Results ===
+Drift 0: boundary at step 500 (t=50.000s) → detected at step 535 (t=53.500s), lag = 35 steps (3.500 s)
+Drift 1: boundary at step 1000 (t=100.000s) → detected at step 1073 (t=107.300s), lag = 73 steps (7.300 s)
+Drift 2: boundary at step 1500 (t=150.000s) → detected at step 1534 (t=153.400s), lag = 34 steps (3.400 s)
+
+Average detection lag over 3 drifts: 4.7 s
 ```
 
 This represents **model-free cyber drift detection** using the same core pipeline that detected human workload changes.
 
-### 📈 Interactive View
+### 📈 Live Visualization (Demo 2)
+
+```bash
+python -m scripts.live_demo_cyber \
+    --csv demos/cyber_demo/unsw_cyber_stream.csv \
+    --rate-hz 10
+```
 
 Live visualization shows:
 
-- network features  
-- HTM state evolution  
-- true boundaries (red dashed lines)  
-- detected spikes (orange dots)  
-- measured detection lag (magenta annotations)
+- selected network features (e.g., rate, sload, dload)
+- HTM cyber-state (anomaly-driven state estimate)
+- true drift boundaries (red dashed lines)
+- detected drift spikes (orange dots)
+- magenta lag bars quantifying detection latency
 
-This demonstrates **domain generality** —  
+This demonstrates domain generality —
 HTM-State adapts online whether its input is human control or network behavior.
+```
 
 ---
 
@@ -239,11 +309,9 @@ Three short sequences illustrate how HTM-State responds to each drift boundary:
 <p align="center">
   <img src="docs/gifs/demo2_50s.gif" width="950"/>
 </p>
-
 <p align="center">
   <img src="docs/gifs/demo2_100s.gif" width="950"/>
 </p>
-
 <p align="center">
   <img src="docs/gifs/demo2_150s.gif" width="950"/>
 </p>
