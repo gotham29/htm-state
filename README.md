@@ -94,7 +94,7 @@ This structure is **domain-agnostic** — swapping input features yields new app
 
 ---
 
-# ⚡ Quickstart
+## ⚡ Quickstart
 
 ```bash
 # 1) Create & activate env (example)
@@ -126,7 +126,7 @@ Once those are working, you can tweak spike detector and HTM parameters via the 
 
 ---
 
-# 🔬 Demo 1 — Behavioral State Transition Detection (Synthetic Control Task)
+## 🔬 Demo 1 — Behavioral State Transition Detection (Synthetic Control Task)
 
 This first demo illustrates HTM-State applied to **synthetic pilot-style behavioral dynamics**  
 (e.g., UAV control, piloting, teleoperation, manual tracking tasks).
@@ -193,7 +193,7 @@ This shows two scrolling plots:
 1. **Control signals**  
 2. **HTM State + detected spikes**  
 
-Spikes at transition points reflect **detected workload shifts**.
+Spikes at transition points reflect **detected behavioral state shifts**.
 
 > Additional small spikes typically represent exploratory deviations or behavioral anomalies — useful for safety monitoring and drift awareness.
 
@@ -230,7 +230,7 @@ Demo 1 validates:
 
 This validates HTM-State as a domain-agnostic adaptive inference engine.
 
-# 🚀 What Demo 1 proves
+## 🚀 What Demo 1 proves
 
 ✔ HTM-State reacts in sub-second time  
 ✔ It requires **no labeled training data**  
@@ -344,7 +344,7 @@ Three short sequences illustrate how HTM-State responds to each true drift bound
 
 ---
 
-# 🏥 Demo 3 — Healthcare Operator Workload *(planned)*
+## 🏥 Demo 3 — Healthcare Operator Workload *(planned)*
 
 This planned demo will apply HTM-State to **clinical operator behavior**  
 — for example ICU nurses, surgeons, or interventionalists — to detect shifts in  
@@ -418,7 +418,6 @@ It is designed as a bridge toward real deployments in:
 - patient safety and quality improvement  
 - staffing and acuity-aware scheduling  
 - AR/VR assistance and training feedback 
-@@
 ---
 
 ---
@@ -443,7 +442,7 @@ Measures adaptation time — critical in safety systems.
 
 ---
 
-# 📦 Development Roadmap
+## 📦 Development Roadmap
 
 | Phase  | Target                       |
 |-------|------------------------------|
@@ -455,19 +454,19 @@ Measures adaptation time — critical in safety systems.
 
 ---
 
-# 🤝 Contributing
+## 🤝 Contributing
 
 Future collaborators welcome —  
 especially for new datasets in cyber, healthcare, robotics, or autonomy.
 
 ---
 
-# 📌 Want to collaborate?
+## 📌 Want to collaborate?
 
 If you are interested in safety monitoring, autonomy, performance assessment,  
 pilot modeling, cybersecurity drift detection, or cognitive systems — get in touch.
 
-# 📧 Contact / Project Lead
+## 📧 Contact / Project Lead
 
 Sam Heiserman  
 Creator — HTM-State  
