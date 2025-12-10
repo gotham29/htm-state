@@ -7,7 +7,6 @@ offline_demo_healthcare.py, then streams it as a live plot.
 """
 
 import argparse
-import time
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
@@ -82,7 +81,7 @@ def detect_spikes_from_state(
     if n < total:
         return spikes
 
-    for t in range(total, n):
+    for t in range(max(total, 1), n - 1):
         recent = state[t - r : t]
         prior = state[t - total : t - r]
 
@@ -94,7 +93,7 @@ def detect_spikes_from_state(
         if (
             growth >= cfg.threshold_pct
             and state[t] >= state[t - 1]
-            and state[t] >= state[t + 1 - 1 if t + 1 < n else t]
+            and state[t] >= state[t + 1]
         ):
             spikes[t] = True
 
