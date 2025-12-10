@@ -342,10 +342,10 @@ Three short sequences illustrate how HTM-State responds to each true drift bound
 
 ## 🏥 Demo 3 — Healthcare Operator Workload
 
-This demo applies HTM-State to **clinical operator behavior**
-such as ICU nurses, surgeons, and interventionalists — detecting  
-**workload transitions and emerging overload** using the *same online pipeline*
-proven in Demo 1 and Demo 2.
+This demo applies HTM-State to **clinical operator behavior**  
+(e.g., ICU nurses, surgeons, interventionalists) — detecting  
+**workload transitions and emerging overload**  
+using the *same online pipeline* proven in Demo 1 and Demo 2.
 
 ---
 
@@ -357,9 +357,9 @@ A synthetic clinical-style operator stream was generated with drift in:
 • interaction_density  
 • task_variability  
 
-Two embedded regime transitions were inserted:
-**baseline → elevated workload → overload**
-reflected in tool motion, interaction rhythm, and task complexity.
+Two embedded regime transitions were inserted:  
+**baseline → elevated workload → overload**  
+expressed through motion, interaction rhythm, and task complexity.
 
 ---
 
@@ -396,7 +396,7 @@ Average detection lag: **0.1 seconds**
 
 ✔ The system reacted almost **instantly (0.1 s @ 10 Hz)**  
 ✔ using zero supervision or retraining  
-✔ same pipeline as workload + cyber — **no retraining required**
+✔ same pipeline as workload + cyber — **no per-domain retuning required**
 
 ---
 
@@ -419,7 +419,7 @@ python -m scripts.live_demo_healthcare \
 ✔ Magenta bars — detection lag visualization
 
 The visual interpretation mirrors Demo 1 & Demo 2 —  
-short lag bars and low false alarms = successful detection.
+short lag bars + low false alarms = successful detection.
 
 ---
 
@@ -429,12 +429,12 @@ Demo 3 extends HTM-State into high-stakes **human-in-the-loop** settings, showin
 
 • workload awareness without labels  
 • adaptive detection without retraining  
-• one pipeline spanning pilots → cyber analysts → clinicians  
+• **same pipeline** spanning pilots → cyber analysts → clinicians  
 
-This positions the system for:
-• patient safety monitoring  
-• staffing acuity decisions  
-• AR/VR assistive feedback systems 
+This positions the system for:  
+• real-time patient safety monitoring  
+• staffing / acuity-aware decision support  
+• AR/VR procedure guidance + operator feedback
 
 ---
 
