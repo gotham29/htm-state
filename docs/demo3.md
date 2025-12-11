@@ -80,7 +80,7 @@ As with Demos 1 & 2, short lag bars + low false alarms = correct behavior.
 
 ---
 
-### 🧠 Why Demo 3 matters
+### 📌 Takeaway
 
 Demo 3 extends HTM-State into high-stakes **human-in-the-loop** settings, showing:
 

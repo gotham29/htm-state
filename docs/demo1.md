@@ -58,7 +58,7 @@ python -m scripts.live_demo_state --backend htm --rate-hz 10
 The live visualization shows two scrolling plots:
 
 1. **Control signals**  
-2. **HTM State + detected spikes**  
+2. **HTM State + detected spikes (orange dots)**  
 
 Spikes at transition points reflect **detected behavioral state shifts**.
 
@@ -69,23 +69,13 @@ Spikes at transition points reflect **detected behavioral state shifts**.
 
 ![HTM-State Demo 1 Live Transition](docs/gifs/demo1_spike1.gif)
 
-*HTM-State continuously adapts to operator behavior in real time.*
-
-### 🔎 Interpretation
-
-✔ **Blue curve** — estimated workload state  
-✔ **Orange spikes** — detected regime shift  
-
 ### ✅ What good detection looks like
 ✔ transition spike occurs shortly after the real change  
 ✔ few false alarms outside transition period  
 
-### 📌 Takeaway  
-Detection occurs **within 1–2 seconds**, with **no offline training or calibration**.
-
 ---
 
-### 🧠 Why This Demo Matters
+### 📌 Takeaway  
 
 Demo 1 validates HTM-State for:
 

@@ -59,5 +59,5 @@ python -m scripts.live_demo_cyber \
 ### 🔎 Interpretation
 * HTM-State again detects the known shifts quickly & precisely, but not as much as Demo 1.
 
-### 🧠 Why This Demo Matters
+### 📌 Takeaway
 * This second promising result supports the **domain generality** of HTM-State. 

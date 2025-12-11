@@ -3,7 +3,8 @@
 This demo applies HTM-State to **manufacturing process behavior**  
 (e.g., machining cells, continuous production lines, and assembly stations).  
 The goal is to detect **emerging drift and pre-fault behavior** using the  
-same online pipeline proven in Demos 1–3 — *no retraining or labels required*.
+same unsupervised online pipeline proven in Demos 1–3 —  
+*no retraining, labels, or per-machine calibration required.*
 
 ---
 
@@ -28,7 +29,8 @@ A true regime shift is injected at:
 
 - **step 1600** → onset of high-drift / pre-fault behavior
 
-HTM-State must surface this transition **quickly** during live streaming.
+HTM-State must surface this transition **quickly** during live streaming  
+despite gradual, noisy drift patterns.
 
 ---
 
@@ -38,7 +40,7 @@ HTM-State must surface this transition **quickly** during live streaming.
 > early enough for predictive maintenance or quality protection —  
 > **without labels, retraining, or supervised ML?**
 
-✔ Yes — with low false alarms and low latency.
+✔ Yes — with **low latency**, **low false alarms**, and **zero supervision**.
 
 ---
 
@@ -63,7 +65,7 @@ Average detection lag: 15 steps (1.5 seconds)
 ```
 
 HTM-State typically detects high-drift onset within 1–3 seconds @ 10 Hz,
-even when drift evolves gradually and contains noise.
+even when drift evolves gradually and includes noisy sensor variation.
 
 ## 🎥 Live Visualization
 
@@ -95,17 +97,13 @@ python -m scripts.live_demo_manufacturing \
 ### Failure modes
 
 ❌ spikes long after the boundary → slow reaction  
-❌ many spikes before the boundary → oversensitive detector  
+❌ spikes before the boundary → overly sensitive detector 
 
-## 🧠 Why Demo 4 Matters
+### 📌 Takeaway
 
-Demo 4 demonstrates **low-latency detection of manufacturing process drift**,  
-even when drift evolves slowly across hundreds of timesteps.
-
-### Key takeaways
-
+- Achieved low-latency detection of manufacturing process drift when drift evolves slowly across hundreds of timesteps
 - No labels, retraining, or supervised models needed  
 - Smooth anomaly → state → spike pipeline works across domains  
 - Drift is detected within **1–3 seconds @ 10 Hz**  
 - Low false positives despite noisy multi-sensor inputs  
-- The same architecture from Demos 1–3 generalizes cleanly to industrial monitoring
+- The same architecture from Demos 1–3 generalizes cleanly to industrial monitoring and predictive maintenance applications.g
