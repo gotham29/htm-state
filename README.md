@@ -493,7 +493,7 @@ python -m scripts.offline_demo_manufacturing \
     --rate-hz 10
 ```
 
-*** Example Output ***
+Example Output
 ```text
 Loaded 2400 timesteps.
 
