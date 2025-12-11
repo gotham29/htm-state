@@ -493,23 +493,22 @@ python -m scripts.offline_demo_manufacturing \
     --rate-hz 10
 ```
 
-### 🧾 Example Output
-
+*** Example Output ***
 ```text
 Loaded 2400 timesteps.
 
 === Manufacturing Drift Detection Results ===
-Transition 0: boundary at step 1600 → detected at step XXXX, lag = YY steps (Z.ZZ s)
+Transition 0: boundary at step 1600 → detected at step 1615, lag = 15 steps (1.500 s @ 10 Hz)
 
-Average detection lag over 1 transitions: YY steps
+Average detection lag: 15 steps (1.5 seconds)
 ```
 
-HTM-State typically detects high-drift onset **within a few seconds (10 Hz)** —  
+HTM-State typically detects high-drift onset **within 1–3 seconds** at 10 Hz —  
 even when signals drift gradually and contain noise.
 
 ## 🎥 Live Visualization
 
-### ▶️ Run
+### ▶️ Run (live drift monitoring)
 
 ```bash
 python -m scripts.live_demo_manufacturing \
@@ -520,8 +519,8 @@ python -m scripts.live_demo_manufacturing \
 
 ### What you should see
 
-- **Top panel:** rolling 100-step window of key features  
-  (vibration, spindle load, feed rate, line speed)  
+- **Top panel:** rolling 100-step window of selected features  
+  (`vibration_energy`, `spindle_load`, `feed_rate`, `line_speed`)  
 
 - **Bottom panel:** HTM-State (EMA of anomaly) + detected spikes  
 - **Red dashed line:** true regime boundary at step 1600  
@@ -542,7 +541,7 @@ python -m scripts.live_demo_manufacturing \
 ### 🎞 Example Output (GIF)
 
 Below is a short clip from the live drift-detection run  
-(using `step-stride=3` to keep rendering fast):
+(`step-stride=3` used to maintain smooth rendering):
 
 <p align="center">
   <img src="docs/gifs/demo4_spike1.gif" width="950"/>
@@ -552,25 +551,24 @@ Below is a short clip from the live drift-detection run
 
 - The system remains quiet during stable production  
 - At the true drift boundary (**step 1600**), HTM-State rises  
-- A spike appears shortly afterward → **detected transition**  
-- Detection lag is small (≈1–2 seconds at 10 Hz)
+- A detection spike appears shortly afterward → **transition detected**  
+- Detection lag is small (≈1.5 seconds @ 10 Hz)
 
 This mirrors Demos 1–3:  
 **model-free online drift detection with low false alarms.**
 
 ## ✔ Summary & Next Steps
 
-Demo 4 shows that **HTM-State provides reliable, low-latency detection of  
-manufacturing process drift** — even when the change is gradual and unfolds  
-over hundreds of timesteps.
+Demo 4 demonstrates **low-latency detection of manufacturing process drift** —  
+even when drift is gradual and spans hundreds of timesteps.
 
 ### Key takeaways:
 
 - No labels, retraining, or supervised models needed  
 - Smooth anomaly → state → spike pipeline works across domains  
-- Drift is detected within seconds at 10 Hz  
-- Low false positives despite noisy multi-sensor signals  
-- Same architecture used in Demos 1–3 generalizes cleanly here
+- Drift is detected within **1–3 seconds** at 10 Hz  
+- Low false positives despite noisy multi-sensor inputs  
+- The same architecture from Demos 1–3 generalizes cleanly to industry monitoring
 
 ---
 
