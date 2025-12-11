@@ -88,7 +88,7 @@ python -m scripts.live_demo_manufacturing \
 - **Orange dots:** detected drift spikes  
 - **Magenta bar:** detection lag (boundary → first spike)
 
-### Good visual behavior
+### ✅ What good detection looks like
 
 ✔ spikes appear shortly after the true drift boundary  
 ✔ low spike activity during stable production  

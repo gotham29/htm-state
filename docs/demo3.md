@@ -66,10 +66,6 @@ python -m scripts.live_demo_healthcare \
     --rate-hz 10
 ```
 
-<p align="center">
-  <img src="docs/gifs/demo3_spike2.gif" width="950"/>
-</p>
-
 ### 🔎 Interpretation
 * HTM-State is again both fast & precise, with short lag bars + low false alarms.
 

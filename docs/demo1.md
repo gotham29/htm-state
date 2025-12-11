@@ -60,18 +60,12 @@ The live visualization shows two scrolling plots:
 1. **Control signals**  
 2. **HTM State + detected spikes (orange dots)**  
 
-Spikes at transition points reflect **detected behavioral state shifts**.
-
-> Minor spikes may reflect exploratory deviations or transient anomalies —  
-> useful for drift awareness and safety monitoring.
-
----
-
-![HTM-State Demo 1 Live Transition](docs/gifs/demo1_spike1.gif)
-
 ### ✅ What good detection looks like
 ✔ transition spike occurs shortly after the real change  
 ✔ few false alarms outside transition period  
+
+### 🔎 Interpretation
+* HTM-State **detected behavioral state shifts** with strong speed & precision.
 
 ---
 
