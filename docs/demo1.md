@@ -61,8 +61,14 @@ The live visualization shows two scrolling plots:
 2. **HTM State + detected spikes (orange dots)**  
 
 ### ✅ What good detection looks like
+
 ✔ transition spike occurs shortly after the real change  
 ✔ few false alarms outside transition period  
+
+### Failure modes
+
+❌ spikes long after the boundary → slow reaction  
+❌ spikes before the boundary → overly sensitive detector 
 
 ### 🔎 Interpretation
 * HTM-State **detected behavioral state shifts** with strong speed & precision.

@@ -78,26 +78,8 @@ python -m scripts.live_demo_manufacturing \
     --step-stride 3
 ```
 
-### What you should see
-
-- **Top panel:** rolling 100-step window of selected features  
-  (`vibration_energy`, `spindle_load`, `feed_rate`, `line_speed`)  
-
-- **Bottom panel:** HTM-State (EMA of anomaly) + detected spikes  
-- **Red dashed line:** true regime boundary at step 1600  
-- **Orange dots:** detected drift spikes  
-- **Magenta bar:** detection lag (boundary → first spike)
-
-### ✅ What good detection looks like
-
-✔ spikes appear shortly after the true drift boundary  
-✔ low spike activity during stable production  
-✔ smooth state signal with a clear upward break near the transition
-
-### Failure modes
-
-❌ spikes long after the boundary → slow reaction  
-❌ spikes before the boundary → overly sensitive detector 
+### 🔎 Interpretation
+* HTM-State is again both fast & precise, with short lag bars + low false alarms.
 
 ### 📌 Takeaway
 
