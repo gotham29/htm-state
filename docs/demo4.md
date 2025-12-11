@@ -97,24 +97,6 @@ python -m scripts.live_demo_manufacturing \
 ❌ spikes long after the boundary → slow reaction  
 ❌ many spikes before the boundary → oversensitive detector  
 
-### 🎞 Example Output (GIF)
-
-Below is a short clip from the live drift-detection run  
-(`step-stride=3` used to maintain smooth rendering):
-
-<p align="center">
-  <img src="docs/gifs/demo4_spike1.gif" width="950"/>
-</p>
-
-**Interpretation**
-
-- The system remains quiet during stable production  
-- At the true drift boundary (**step 1600**), HTM-State rises  
-- A detection spike appears shortly afterward → **transition detected**  
-- Detection lag is small (≈1.5 seconds @ 10 Hz)
-
-This mirrors Demos 1–3 — fast, model-free drift detection with low false alarms.
-
 ## 🧠 Why Demo 4 Matters
 
 Demo 4 demonstrates **low-latency detection of manufacturing process drift**,  

@@ -6,7 +6,7 @@ detecting subtle and large-scale behavioral shifts in real time.
 
 ### 🔍 Scenario
 
-+We simulate a streaming sequence with **three true drift boundaries**:
+We simulate a streaming sequence with **three true drift boundaries**:
 
 * stable period  
 * small statistical change  
@@ -62,6 +62,6 @@ Live visualization shows:
 - detected drift spikes (orange dots)
 - magenta lag bars quantifying detection latency
 
-+This demonstrates **domain generality** —  
-+HTM-State adapts online whether its input is human control, network traffic,  
-+or machine sensor data.
+This demonstrates **domain generality** —  
+HTM-State adapts online whether its input is human control, network traffic,  
+or machine sensor data.
