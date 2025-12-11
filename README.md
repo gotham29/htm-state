@@ -25,9 +25,9 @@ behavioral pattern drift, safety monitoring, or cognitive state awareness is nee
 - [🔁 Core Architecture](#-core-architecture)
 - [✨ What the repo includes](#-what-the-repo-includes)
 - [⚡ Quickstart](#-quickstart)
-- [🔬 Demo 1 — Real-Time Behavioral State Transition Detection (Synthetic Control Task)](#-demo-1--behavioral-state-transition-detection-synthetic-control-task)
-- [🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)](#-demo-2--cyber-behavior-drift-detection-unsw-nb15)
-- [🏥 Demo 3 — Healthcare Operator Workload](#-demo-3--healthcare-operator-workload)
+- [🔬 Demo 1 — Behavioral State Transition Detection](#-demo-1--behavioral-state-transition-detection-synthetic-control-task)
+- [🔐 Demo 2 — Cyber Behavior Drift Detection](#-demo-2--cyber-behavior-drift-detection-unsw-nb15)
+- [🏥 Demo 3 — Healthcare Operator Workload Detection](#-demo-3--healthcare-operator-workload-detection)
 - [🏭 Demo 4 — Manufacturing Process Drift Detection](#-demo-4--manufacturing-process-drift-detection)
 - [🛠 Architecture Components](#-architecture-components)
 - [📦 Development Roadmap](#-development-roadmap)
@@ -45,7 +45,7 @@ Conventional ML assumes:
 - labeled supervision  
 - slow detection response  
 
-**But real systems drift continuously.**
++**But real systems drift continuously — often subtly.**
 
 Human operators change mode.  
 Networks degrade before they fail.  
@@ -123,7 +123,8 @@ python -m scripts.live_demo_cyber \
     --rate-hz 10
 ```
 
-Once those are working, you can tweak spike detector and HTM parameters via the CLI flags in each script to explore different sensitivities and response speeds.
+Once those are working, you can tweak spike detector + HTM parameters via CLI flags  
+to explore different sensitivities, detection latencies, and response profiles.
 
 ---
 
@@ -151,12 +152,12 @@ surfaces regime transitions with **sub-second latency** — no labels or retrain
 - **Detection lag**: typically **1–2 seconds** at 10 Hz  
 - Zero-shot unsupervised detection — *no calibration, no training data*
 
-This validates HTM-State as a fast, adaptive change detector suitable  
-for any human or machine control stream.
+This validates HTM-State as a **fast, adaptive change detector** suitable  
+for any continuous human or machine control stream.
 
 ---
 
-## 🔬 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
+## 🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
 
 HTM-State detects **behavioral drift** in streaming network flow statistics  
 derived from the UNSW-NB15 dataset. The system adapts online to shifting  
@@ -182,9 +183,9 @@ no supervised classifiers or retraining loops.
 - **Magenta bars** — detection lag  
 - Typical detection latency: **3–7 seconds at 10 Hz**
 
-HTM-State identifies multi-stage drift in network behavior **without attack labels**  
-and with low false alarms, showing strong generalization from human control  
-(data in Demo 1) to cyber traffic streams.
+HTM-State identifies **multi-stage drift** in network behavior without attack labels,  
+maintaining low false alarms. This demonstrates strong generalization from  
+human control streams (Demo 1) to cyber traffic behavior.
 
 ---
 
@@ -214,9 +215,8 @@ no labels, no per-operator calibration.
 - **Magenta bar** — detection lag  
 - Typical detection latency: **~0.1–1.0 seconds at 10 Hz**
 
-This shows HTM-State generalizing seamlessly into  
-**high-stakes human-in-the-loop environments**, learning online and detecting  
-operator workload changes without supervised data or retraining.
+This shows HTM-State generalizing seamlessly into **high-stakes human-in-the-loop** domains,  
+learning online and detecting workload changes without supervised data or retraining.
 
 ---
 
@@ -247,10 +247,8 @@ no labels, no per-machine calibration, no retraining loop.
 - Typical detection latency: **~1–3 seconds @ 10 Hz**
 
 This demonstrates HTM-State’s ability to detect  
-**slow, noisy industrial process drift** using the same  
-model-free change-detection pipeline validated in the earlier demos.
-
----
+**slow, noisy industrial process drift** using the same model-free  
+change-detection pipeline validated in earlier demos.
 
 ---
 
@@ -276,27 +274,27 @@ Measures adaptation time — critical in safety systems.
 
 ## 📦 Development Roadmap
 
-| Phase  | Target                      |
+| Phase  | Target |
 |-------|------------------------------|
 | Demo 1 | synthetic control state transition (complete — offline + live + GIF) |
 | Demo 2 | cyber drift detection              (complete — offline + live + GIF) |
 | Demo 3 | healthcare workload                (complete — offline + live + GIF) |
 | Demo 4 | industrial predictive change       (complete — offline + live + GIF) |
-| Demo 5 | UAV safety horizon estimation      TODO |
+| Demo 5 | UAV safety horizon estimation (TODO) |
 
 ---
 
 ## 🤝 Contributing
 
-Future collaborators welcome —  
-especially for new datasets in cyber, healthcare, robotics, or autonomy.
+Future collaborators welcome — especially for new datasets in  
+cyber, healthcare, robotics, manufacturing, autonomy, or aviation.
 
 ---
 
 ## 📌 Want to collaborate?
 
-If you are interested in safety monitoring, autonomy, performance assessment,  
-pilot modeling, cybersecurity drift detection, or cognitive systems — get in touch.
+If you're interested in safety monitoring, autonomy, behavior modeling,  
+cybersecurity drift detection, or cognitive systems — get in touch.
 
 ## 📧 Contact / Project Lead
 
