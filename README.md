@@ -129,113 +129,11 @@ Once those are working, you can tweak spike detector and HTM parameters via the 
 
 ## 🔬 Demo 1 — Behavioral State Transition Detection (Synthetic Control Task)
 
-This first demo illustrates HTM-State applied to **synthetic pilot-style behavioral dynamics**  
-(e.g., UAV control, piloting, teleoperation, manual tracking tasks).
+This demo illustrates HTM-State detecting a **behavioral mode shift** in a  
+synthetic pilot-style control task — no labels or retraining required.
 
-### ✈️ Scenario
-
-We simulate 1000 steps of control activity:
-
-- First half: slower, smoother human control  
-- Second half: higher tempo, more variability (increased workload)  
-
-There is **no training data** and **no supervision**.
-
-### 📌 Question
-
-> Can the system autonomously detect this internal mode change just from streaming behavior?
-
-✔ Yes — with detection lag typically around **1–2 seconds** at 10 Hz  
-depending on spike sensitivity parameters. A representative run is shown below.
-
-This is significant because:
-* conventional anomaly detectors require retraining
-* supervised workload models need labeled sessions
-* HTM-State learns on the fly and adapts autonomously
-
----
-
-### 💻 Offline Evaluation
-
-```bash
-python -m scripts.offline_demo_detection_lag \
-    --csv demos/workload_demo/synthetic_workload.csv \
-    --backend htm \
-    --rate-hz 10
-```
-
-Example output:
-
-```text
-Processed 1000 steps...
-Using ground-truth toggle_step = 501
-Detection lag: 5 steps
-Detection lag: 0.500 s at 10 Hz
-```
-
-### ➤ Interpretation
-
-HTM-State detects the behavioral state shift  
-**within half a second**  
-of its onset.
-
-That represents near-real-time awareness without supervision.
-
----
-
-### 🎥 Live Visualization
-
-```bash
-python -m scripts.live_demo_state --backend htm --rate-hz 10
-```
-
-This shows two scrolling plots:
-
-1. **Control signals**  
-2. **HTM State + detected spikes**  
-
-Spikes at transition points reflect **detected behavioral state shifts**.
-
-> Additional small spikes typically represent exploratory deviations or behavioral anomalies — useful for safety monitoring and drift awareness.
-
----
-
-![HTM-State Demo 1 Live Transition](docs/gifs/demo1_spike1.gif)
-
-*HTM-State continuously learns operator behavior in real time.*
-
-### 🔎 Interpretation
-
-✔ **Blue curve** — estimated workload state  
-✔ **Orange spikes** — detected regime shift  
-
-### ✅ What good detection looks like
-✔ transition spike occurs shortly after the real change  
-✔ few false alarms outside transition period  
-
-### 📌 Takeaway  
-Detection occurs **within ~1–2 seconds**, without offline training or calibration.
-
----
-
-### 🧠 Why Demo 1 matters
-
-Demo 1 validates:
-
-- ✔ online learning  
-- ✔ unsupervised change detection  
-- ✔ fast response  
-- ✔ streaming embodiment  
-- ✔ generality of approach  
-
-This validates HTM-State as a domain-agnostic adaptive inference engine.
-
-### 🚀 What Demo 1 proves
-
-✔ HTM-State reacts in sub-second time  
-✔ It requires **no labeled training data**  
-✔ It adapts online like a human observer  
-✔ It generalizes across domains — workload today, cyber and healthcare tomorrow   
+👉 **Full demo (offline + live + GIF):**  
+[`docs/demo1.md`](docs/demo1.md)
 
 ---
 
@@ -547,26 +445,26 @@ Below is a short clip from the live drift-detection run
   <img src="docs/gifs/demo4_spike1.gif" width="950"/>
 </p>
 
-**Interpretation:**
+**Interpretation**
 
 - The system remains quiet during stable production  
 - At the true drift boundary (**step 1600**), HTM-State rises  
 - A detection spike appears shortly afterward → **transition detected**  
 - Detection lag is small (≈1.5 seconds @ 10 Hz)
 
-This mirrors Demos 1–3:  
+This mirrors Demos 1–3 —  
 **model-free online drift detection with low false alarms.**
 
-## ✔ Summary & Next Steps
+## 🧠 Why Demo 4 Matters
 
-Demo 4 demonstrates **low-latency detection of manufacturing process drift** —  
-even when drift is gradual and spans hundreds of timesteps.
+Demo 4 demonstrates **low-latency detection of manufacturing process drift**,  
+even when drift evolves slowly across hundreds of timesteps.
 
-### Key takeaways:
+### Key takeaways
 
 - No labels, retraining, or supervised models needed  
 - Smooth anomaly → state → spike pipeline works across domains  
-- Drift is detected within **1–3 seconds** at 10 Hz  
+- Drift is detected within **1–3 seconds @ 10 Hz**  
 - Low false positives despite noisy multi-sensor inputs  
 - The same architecture from Demos 1–3 generalizes cleanly to industry monitoring
 
@@ -599,8 +497,8 @@ Measures adaptation time — critical in safety systems.
 | Demo 1 | synthetic control state transition (complete — offline + live + GIF)    |
 | Demo 2 | cyber drift detection              (complete — offline + live + GIF)   |
 | Demo 3 | healthcare workload                (complete — offline + live + GIF)   |
-| Demo 4 | industrial predictive change       TODO   |
-| Demo 5 | UAV safety horizon estimation      TODO   |
+| Demo 4 | industrial predictive change       (complete — offline + live + GIF) |
+| Demo 5 | UAV safety horizon estimation      TODO |
 
 ---
 
