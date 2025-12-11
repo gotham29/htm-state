@@ -70,13 +70,8 @@ python -m scripts.live_demo_healthcare \
   <img src="docs/gifs/demo3_spike2.gif" width="950"/>
 </p>
 
-✔ Top panel — motion / interaction features
-✔ Bottom panel — HTM-State + detected transitions
-✔ Red dashed line — true event
-✔ Orange dots — detection spikes
-✔ Magenta bars — detection lag visualization
-
-As with Demos 1 & 2, short lag bars + low false alarms = correct behavior.
+### 🔎 Interpretation
+* HTM-State is again both fast & precise, with short lag bars + low false alarms.
 
 ---
 
