@@ -1,23 +1,24 @@
 ### 🔧 Scenario
 
-We simulate 1000 steps of control activity:
+We simulate a streaming human-control task with **1000 timesteps**:
 
 - First half: slower, smoother human control  
 - Second half: higher tempo, more variability (increased workload)  
 
-There is **no training data** and **no supervision**.
+There is **no training phase**, **no labels**, and **no supervision**.
 
 ### 📌 Question
 
-> Can the system autonomously detect this internal mode change just from streaming behavior?
+> Can HTM-State autonomously detect this behavioral mode change  
+> *directly from streaming behavior*?
 
-✔ Yes — with detection lag typically around **1–2 seconds** at 10 Hz  
-depending on spike sensitivity parameters. A representative run is shown below.
+✔ Yes — typically within **1–2 seconds** at 10 Hz.  
+A representative run is shown below.
 
-This is significant because:
-* conventional anomaly detectors require retraining
-* supervised workload models need labeled sessions
-* HTM-State learns on the fly and adapts autonomously
+This matters because:
+* conventional anomaly detectors require retraining  
+* supervised workload models need labeled sessions  
+* HTM-State learns adaptively and online  
 
 ---
 
@@ -42,10 +43,9 @@ Detection lag: 0.500 s at 10 Hz
 ### 🔎 Interpretation
 
 HTM-State detects the behavioral state shift  
-**within half a second**  
-of its onset.
+**within ~0.5–1.5 seconds** of onset.
 
-That represents near-real-time awareness without supervision.
+This represents **near–real-time behavioral awareness** without supervision.
 
 ---
 
@@ -55,20 +55,21 @@ That represents near-real-time awareness without supervision.
 python -m scripts.live_demo_state --backend htm --rate-hz 10
 ```
 
-This shows two scrolling plots:
+The live visualization shows two scrolling plots:
 
 1. **Control signals**  
 2. **HTM State + detected spikes**  
 
 Spikes at transition points reflect **detected behavioral state shifts**.
 
-> Additional small spikes typically represent exploratory deviations or behavioral anomalies — useful for safety monitoring and drift awareness.
+> Minor spikes may reflect exploratory deviations or transient anomalies —  
+> useful for drift awareness and safety monitoring.
 
 ---
 
 ![HTM-State Demo 1 Live Transition](docs/gifs/demo1_spike1.gif)
 
-*HTM-State continuously learns operator behavior in real time.*
+*HTM-State continuously adapts to operator behavior in real time.*
 
 ### 🔎 Interpretation
 
@@ -80,7 +81,7 @@ Spikes at transition points reflect **detected behavioral state shifts**.
 ✔ few false alarms outside transition period  
 
 ### 📌 Takeaway  
-Detection occurs **within ~1–2 seconds**, without offline training or calibration.
+Detection occurs **within 1–2 seconds**, with **no offline training or calibration**.
 
 ---
 
@@ -101,4 +102,4 @@ This validates HTM-State as a domain-agnostic adaptive inference engine.
 ✔ HTM-State reacts in sub-second time  
 ✔ It requires **no labeled training data**  
 ✔ It adapts online like a human observer  
-✔ It generalizes across domains — workload today, cyber and healthcare tomorrow   
+✔ It generalizes across domains — workload → cyber → healthcare → manufacturing  

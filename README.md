@@ -156,336 +156,101 @@ for any human or machine control stream.
 
 ---
 
-## 🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
+## 🔬 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
 
-Cyber systems drift continuously — sometimes without explicit attack signatures.  
-This demo applies HTM-State to **streaming packet-flow behavior** derived from UNSW-NB15.
+HTM-State detects **behavioral drift** in streaming network flow statistics  
+derived from the UNSW-NB15 dataset. The system adapts online to shifting  
+traffic patterns and surfaces **emerging anomalies without signatures** —  
+no supervised classifiers or retraining loops.
 
-### 🔍 Scenario
-
-We generate a streaming sequence with three true drift boundaries:
-
-* stable period  
-* small statistical change  
-* larger behavioral shift  
-
-Ground-truth boundary times are marked visually with **vertical dashed red lines**.
-
-### 📌 Question
-
-> Can HTM-State detect emerging cyber behavior shifts  
-> *without* retraining, classifiers, or labels?
-
-✔ Yes — it learns online and responds autonomously.
-
-### 💻  Offline Evaluation
-
-Example:
-
-```bash
-python -m scripts.offline_demo_cyber \
-    --csv demos/cyber_demo/unsw_cyber_stream.csv \
-    --rate-hz 10
-```
-
-Example output:
-
-```text
-Found 3 drift boundaries at steps: [500, 1000, 1500]
-
-=== Drift Detection Results ===
-Drift 0: boundary at step 500 (t=50.000s) → detected at step 535 (t=53.500s), lag = 35 steps (3.500 s)
-Drift 1: boundary at step 1000 (t=100.000s) → detected at step 1073 (t=107.300s), lag = 73 steps (7.300 s)
-Drift 2: boundary at step 1500 (t=150.000s) → detected at step 1534 (t=153.400s), lag = 34 steps (3.400 s)
-
-Average detection lag over 3 drifts: **4.7 s**
-```
-
-This represents **model-free cyber drift detection** using the same core pipeline that detected human workload changes.
-
-### 🎥 Live Visualization
-
-```bash
-python -m scripts.live_demo_cyber \
-    --csv demos/cyber_demo/unsw_cyber_stream.csv \
-    --rate-hz 10
-```
-
-Live visualization shows:
-
-- selected network features (e.g., rate, sload, dload)
-- HTM cyber-state (anomaly-driven state estimate)
-- true drift boundaries (red dashed lines)
-- detected drift spikes (orange dots)
-- magenta lag bars quantifying detection latency
-
-This demonstrates domain generality —
-HTM-State adapts online whether its input is human control or network behavior.
+👉 **Full demo (offline + live + details):**  
+[`docs/demo2.md`](docs/demo2.md)
 
 ---
 
----
-Three short sequences illustrate how HTM-State responds to each true drift boundary:
+### 🎥 Live Drift Example
 
 <p align="center">
-  <img src="docs/gifs/demo2_spike1.gif" width="950"/>
-</p>
-
-<p align="center">
-  <img src="docs/gifs/demo2_spike2.gif" width="950"/>
-</p>
-
-<p align="center">
-  <img src="docs/gifs/demo2_spike3.gif" width="950"/>
-</p>
-
-### 🔎 Interpretation  
-
-✔ **Orange dots** — detected drift spikes  
-✔ **Red dashed line** — true drift boundary  
-✔ **Magenta bar** — lag from boundary → detection  
-
-### ✅ What good detection looks like
-✔ spikes appear very close to the red line  
-✔ magenta bars are short  
-
-### ⚠️ Failure modes to watch for
-❌ spikes appear far after the red line → slow reaction  
-❌ repeated spikes with no boundary → false positives  
-
-### 📌 Takeaway  
-👉 **Same pipeline as Demo 1 — different domain — no retraining required.**
-
----
-
-## 🏥 Demo 3 — Healthcare Operator Workload
-
-This demo applies HTM-State to **clinical operator behavior**  
-(e.g., ICU nurses, surgeons, interventionalists) — detecting  
-**workload transitions and emerging overload**  
-using the *same online pipeline* proven in Demo 1 and Demo 2.
-
----
-
-### 🩺 Scenario
-
-A synthetic clinical-style operator stream was generated with drift in:
-• motion_energy  
-• cursor_velocity  
-• interaction_density  
-• task_variability  
-
-Two embedded regime transitions were inserted:  
-**baseline → elevated workload → overload**  
-expressed through motion, interaction rhythm, and task complexity.
-
----
-
-### 📌 Core Question
-> Can HTM-State surface **emerging overload / performance change**
-> fast enough to matter for safety?
-
-As in Demos 1 and 2, HTM-State must:
-✔ learn **online** from operator behavior  
-✔ detect **transitions** in workload state  
-✔ measure **latency** from event → detection 
-
----
-
-### 💻 Offline Evaluation
-
-```bash
-python -m scripts.offline_demo_healthcare \
-    --csv demos/healthcare_demo/operator_stream.csv \
-    --rate-hz 10
-```
-
-Example output:
-
-```text
-Loaded 2000 timesteps.
-
-=== Healthcare Workload Detection Results ===
-Transition 0: boundary at step 1450 → detected at step 1451
-Lag = **1 step (0.100 s @ 10 Hz)**
-
-Average detection lag: **0.1 seconds**
-```
-
-✔ The system reacted almost **instantly (0.1 s @ 10 Hz)**  
-✔ using zero supervision or retraining  
-✔ same pipeline as workload + cyber — **no per-domain retuning required**
-
----
-
-### 🎥 Live Visualization
-
-```bash
-python -m scripts.live_demo_healthcare \
-    --csv demos/healthcare_demo/operator_stream.csv \
-    --rate-hz 10
-```
-
-<p align="center">
-  <img src="docs/gifs/demo3_spike2.gif" width="950"/>
-</p>
-
-✔ Top panel — motion / interaction features  
-✔ Bottom panel — HTM-State + detected workload transitions  
-✔ Red dashed line — true event  
-✔ Orange dots — detection spikes  
-✔ Magenta bars — detection lag visualization
-
-The visual interpretation mirrors Demo 1 & Demo 2 —  
-short lag bars + low false alarms = successful detection.
-
----
-
-### 🧠 Why Demo 3 matters
-
-Demo 3 extends HTM-State into high-stakes **human-in-the-loop** settings, showing:
-
-• workload awareness without labels  
-• adaptive detection without retraining  
-• **same pipeline** spanning pilots → cyber analysts → clinicians  
-
-This positions the system for:  
-• real-time patient safety monitoring  
-• staffing / acuity-aware decision support  
-• AR/VR procedure guidance + operator feedback
-
----
-
-# 🏭 Demo 4 — Manufacturing Process Drift Detection
-
-This demo applies HTM-State to **manufacturing process behavior**  
-(e.g., machining cells, continuous production lines, and assembly stations).  
-The goal is to detect **emerging drift and pre-fault behavior** using the same  
-online pipeline proven in Demos 1–3 — *no retraining or labels required*.
-
----
-
-## 🔧 Scenario
-
-We simulate a production line operating in three regimes:
-
-1. **Stable baseline operation**  
-2. **Slow drift** (tool wear, small vibration increases, load instability)  
-3. **High-drift pre-fault regime**
-
-Key monitored signals include:
-
-- `vibration_energy`  
-- `spindle_load`  
-- `feed_rate`  
-- `line_speed`  
-- `temperature`  
-- `part_time`
-
-A true regime shift is injected at:
-
-- **step 1600** → onset of high-drift / pre-fault behavior
-
-HTM-State must surface this transition *quickly* during live streaming.
-
----
-
-## 📌 Core Question
-
-> Can HTM-State detect **emerging manufacturing process drift**  
-> early enough for predictive maintenance or quality protection —  
-> **without labels, retraining, or supervised ML?**
-
-✔ Yes — with low false alarms and low latency.
-
----
-
-## 💻 Offline Evaluation
-
-### ▶️ Run (offline drift evaluation)
-
-```bash
-python -m scripts.offline_demo_manufacturing \
-    --csv demos/manufacturing_demo/line_stream.csv \
-    --rate-hz 10
-```
-
-Example Output
-```text
-Loaded 2400 timesteps.
-
-=== Manufacturing Drift Detection Results ===
-Transition 0: boundary at step 1600 → detected at step 1615, lag = 15 steps (1.500 s @ 10 Hz)
-
-Average detection lag: 15 steps (1.5 seconds)
-```
-
-HTM-State typically detects high-drift onset **within 1–3 seconds** at 10 Hz —  
-even when signals drift gradually and contain noise.
-
-## 🎥 Live Visualization
-
-### ▶️ Run (live drift monitoring)
-
-```bash
-python -m scripts.live_demo_manufacturing \
-    --csv demos/manufacturing_demo/line_stream.csv \
-    --rate-hz 10 \
-    --step-stride 3
-```
-
-### What you should see
-
-- **Top panel:** rolling 100-step window of selected features  
-  (`vibration_energy`, `spindle_load`, `feed_rate`, `line_speed`)  
-
-- **Bottom panel:** HTM-State (EMA of anomaly) + detected spikes  
-- **Red dashed line:** true regime boundary at step 1600  
-- **Orange dots:** detected drift spikes  
-- **Magenta bar:** detection lag (boundary → first spike)
-
-### Good visual behavior
-
-✔ spikes appear shortly after the true drift boundary  
-✔ low spike activity during stable production  
-✔ smooth state signal with a clear upward break near the transition
-
-### Failure modes
-
-❌ spikes long after the boundary → slow reaction  
-❌ many spikes before the boundary → oversensitive detector  
-
-### 🎞 Example Output (GIF)
-
-Below is a short clip from the live drift-detection run  
-(`step-stride=3` used to maintain smooth rendering):
-
-<p align="center">
-  <img src="docs/gifs/demo4_spike1.gif" width="950"/>
+  <img src="docs/gifs/demo2_spike1.gif" width="900"/>
 </p>
 
 **Interpretation**
 
-- The system remains quiet during stable production  
-- At the true drift boundary (**step 1600**), HTM-State rises  
-- A detection spike appears shortly afterward → **transition detected**  
-- Detection lag is small (≈1.5 seconds @ 10 Hz)
+- **Blue trace** — estimated cyber-state (EMA of anomaly)  
+- **Orange spikes** — detected behavior shifts  
+- **Red dashed lines** — true drift boundaries  
+- **Magenta bars** — detection lag  
+- Typical detection latency: **3–7 seconds at 10 Hz**
 
-This mirrors Demos 1–3 —  
-**model-free online drift detection with low false alarms.**
+HTM-State identifies multi-stage drift in network behavior **without attack labels**  
+and with low false alarms, showing strong generalization from human control  
+(data in Demo 1) to cyber traffic streams.
 
-## 🧠 Why Demo 4 Matters
+---
 
-Demo 4 demonstrates **low-latency detection of manufacturing process drift**,  
-even when drift evolves slowly across hundreds of timesteps.
+## 🏥 Demo 3 — Healthcare Operator Workload Detection
 
-### Key takeaways
+HTM-State monitors **clinical operator behavior** (e.g., ICU nurses, surgeons)  
+to detect **workload transitions and emerging overload states** in real time.  
+The same unsupervised online pipeline from Demos 1 & 2 applies —  
+no labels, no per-operator calibration.
 
-- No labels, retraining, or supervised models needed  
-- Smooth anomaly → state → spike pipeline works across domains  
-- Drift is detected within **1–3 seconds @ 10 Hz**  
-- Low false positives despite noisy multi-sensor inputs  
-- The same architecture from Demos 1–3 generalizes cleanly to industry monitoring
+👉 **Full demo (offline + live + details):**  
+[`docs/demo3.md`](docs/demo3.md)
+
+---
+
+### 🎥 Live Workload Transition Example
+
+<p align="center">
+  <img src="docs/gifs/demo3_spike2.gif" width="900"/>
+</p>
+
+**Interpretation**
+
+- **Blue trace** — HTM-State (EMA of anomaly)  
+- **Orange spikes** — detected workload transitions  
+- **Red dashed line** — true transition to overload  
+- **Magenta bar** — detection lag  
+- Typical detection latency: **~0.1–1.0 seconds at 10 Hz**
+
+This shows HTM-State generalizing seamlessly into  
+**high-stakes human-in-the-loop environments**, learning online and detecting  
+operator workload changes without supervised data or retraining.
+
+---
+
+## 🏭 Demo 4 — Manufacturing Process Drift Detection
+
+HTM-State monitors **multi-sensor manufacturing behavior** to surface  
+**emerging drift, instability, and pre-fault transitions** in real time.  
+The same unsupervised online pipeline from Demos 1–3 applies —  
+no labels, no per-machine calibration, no retraining loop.
+
+👉 **Full demo (offline + live + details):**  
+[`docs/demo4.md`](docs/demo4.md)
+
+---
+
+### 🎥 Live Drift Transition Example
+
+<p align="center">
+  <img src="docs/gifs/demo4_spike1.gif" width="900"/>
+</p>
+
+**Interpretation**
+
+- **Blue trace** — HTM-State (EMA of anomaly)  
+- **Orange spikes** — detected process drift  
+- **Red dashed line** — true onset of high-drift / pre-fault behavior  
+- **Magenta bar** — detection lag  
+- Typical detection latency: **~1–3 seconds @ 10 Hz**
+
+This demonstrates HTM-State’s ability to detect  
+**slow, noisy industrial process drift** using the same  
+model-free change-detection pipeline validated in the earlier demos.
+
+---
 
 ---
 
@@ -511,11 +276,11 @@ Measures adaptation time — critical in safety systems.
 
 ## 📦 Development Roadmap
 
-| Phase  | Target                       |
+| Phase  | Target                      |
 |-------|------------------------------|
-| Demo 1 | synthetic control state transition (complete — offline + live + GIF)    |
-| Demo 2 | cyber drift detection              (complete — offline + live + GIF)   |
-| Demo 3 | healthcare workload                (complete — offline + live + GIF)   |
+| Demo 1 | synthetic control state transition (complete — offline + live + GIF) |
+| Demo 2 | cyber drift detection              (complete — offline + live + GIF) |
+| Demo 3 | healthcare workload                (complete — offline + live + GIF) |
 | Demo 4 | industrial predictive change       (complete — offline + live + GIF) |
 | Demo 5 | UAV safety horizon estimation      TODO |
 
