@@ -129,11 +129,30 @@ Once those are working, you can tweak spike detector and HTM parameters via the 
 
 ## 🔬 Demo 1 — Behavioral State Transition Detection (Synthetic Control Task)
 
-This demo illustrates HTM-State detecting a **behavioral mode shift** in a  
-synthetic pilot-style control task — no labels or retraining required.
+HTM-State detects a **behavioral mode shift** in a simple human-in-the-loop  
+control task. The system learns online from raw behavior streams and  
+surfaces regime transitions with **sub-second latency** — no labels or retraining.
 
-👉 **Full demo (offline + live + GIF):**  
+👉 **Full demo (offline + live + details):**  
 [`docs/demo1.md`](docs/demo1.md)
+
+---
+
+### 🎥 Live Transition Example
+
+<p align="center">
+  <img src="docs/gifs/demo1_spike1.gif" width="900"/>
+</p>
+
+**Interpretation**
+
+- **Blue trace** — estimated behavioral state  
+- **Orange spikes** — detected transitions  
+- **Detection lag**: typically **1–2 seconds** at 10 Hz  
+- Zero-shot unsupervised detection — *no calibration, no training data*
+
+This validates HTM-State as a fast, adaptive change detector suitable  
+for any human or machine control stream.
 
 ---
 
