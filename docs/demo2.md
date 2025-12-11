@@ -56,14 +56,6 @@ python -m scripts.live_demo_cyber \
     --rate-hz 10
 ```
 
-Live visualization displays:
-
-• selected network-flow features (e.g., rate, sload, dload)
-• HTM-State (EMA of anomaly)
-• true drift boundaries (red dashed lines)
-• detected drift spikes (orange dots)
-• magenta lag bars measuring detection latency
-
-Together, these illustrate HTM-State’s **domain generality** —
-the same architecture adapts online whether its input is
-human behavior, cyber traffic, or machine sensor data.
+### 🔎 Interpretation
+* HTM-State again detects the known shifts quickly & precisely, but not as much as Demo 1.
+* This second promising result support the **domain generality** of HTM-State 

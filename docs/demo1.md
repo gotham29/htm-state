@@ -87,19 +87,10 @@ Detection occurs **within 1–2 seconds**, with **no offline training or calibra
 
 ### 🧠 Why This Demo Matters
 
-Demo 1 validates:
+Demo 1 validates HTM-State for:
 
-- ✔ online learning  
+- ✔ online learning (no split training data)  
 - ✔ unsupervised change detection  
 - ✔ fast response  
-- ✔ streaming embodiment  
-- ✔ generality of approach  
+- ✔ precision  
 
-This validates HTM-State as a domain-agnostic adaptive inference engine.
-
-### 🚀 What Demo 1 proves
-
-✔ HTM-State reacts in sub-second time  
-✔ It requires **no labeled training data**  
-✔ It adapts online like a human observer  
-✔ It generalizes across domains — workload → cyber → healthcare → manufacturing  

@@ -45,7 +45,7 @@ Conventional ML assumes:
 - labeled supervision  
 - slow detection response  
 
-+**But real systems drift continuously — often subtly.**
+**But real systems drift continuously — often subtly.**
 
 Human operators change mode.  
 Networks degrade before they fail.  
@@ -152,8 +152,8 @@ surfaces regime transitions with **sub-second latency** — no labels or retrain
 - **Detection lag**: typically **1–2 seconds** at 10 Hz  
 - Zero-shot unsupervised detection — *no calibration, no training data*
 
-This validates HTM-State as a **fast, adaptive change detector** suitable  
-for any continuous human or machine control stream.
+This result supports HTM-State as a **fast, adaptive & precise change detector**  
+for human control streams.
 
 ---
 
@@ -276,11 +276,11 @@ Measures adaptation time — critical in safety systems.
 
 | Phase  | Target |
 |-------|------------------------------|
-| Demo 1 | synthetic control state transition (complete — offline + live + GIF) |
-| Demo 2 | cyber drift detection              (complete — offline + live + GIF) |
-| Demo 3 | healthcare workload                (complete — offline + live + GIF) |
-| Demo 4 | industrial predictive change       (complete — offline + live + GIF) |
-| Demo 5 | UAV safety horizon estimation (TODO) |
+| Demo 1 | synthetic control state transition (complete — offline + live) |
+| Demo 2 | cyber drift detection              (complete — offline + live) |
+| Demo 3 | healthcare workload                (complete — offline + live) |
+| Demo 4 | industrial predictive change       (complete — offline + live) |
+| Demo 5 | UAV safety horizon estimation      (TODO) |
 
 ---
 
