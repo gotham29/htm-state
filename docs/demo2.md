@@ -1,29 +1,30 @@
 ## 🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
 
 Cyber systems drift continuously — often without clear attack signatures.  
-This demo applies HTM-State to **streaming packet-flow behavior** from UNSW-NB15,  
-detecting subtle and large-scale behavioral shifts in real time.
+This demo applies HTM-State to **streaming network-flow behavior** from the UNSW-NB15 dataset,  
+detecting **subtle and large-scale behavioral shifts** fully online and without retraining.
 
 ### 🔍 Scenario
 
-We simulate a streaming sequence with **three true drift boundaries**:
+We simulate a streaming sequence containing **three true drift boundaries**:
 
 * stable period  
 * small statistical change  
 * larger behavioral shift  
 
-Ground-truth boundary times are marked visually with **vertical dashed red lines**.
+Ground-truth boundaries are visualized using **vertical dashed red lines** in the live view.
 
 ### 📌 Question
 
 > Can HTM-State detect emerging cyber behavior shifts  
 > *without* retraining, classifiers, or labels?
 
-✔ Yes — it learns online and responds autonomously.
+✔ Yes — HTM-State learns online from raw features  
+and adapts autonomously to shifting behavior distributions.
 
 ### 💻  Offline Evaluation
 
-Example command:
+Run offline drift evaluation:
 
 ```bash
 python -m scripts.offline_demo_cyber \
@@ -44,7 +45,8 @@ Drift 2: boundary at step 1500 (t=150.000s) → detected at step 1534 (t=153.400
 Average detection lag over 3 drifts: **4.7 s**
 ```
 
-This represents **model-free cyber drift detection** using the same core pipeline that detected human workload changes.
+This demonstrates **model-free cyber drift detection** using
+the same unsupervised online pipeline validated in Demo 1.
 
 ### 🎥 Live Visualization
 
@@ -54,14 +56,14 @@ python -m scripts.live_demo_cyber \
     --rate-hz 10
 ```
 
-Live visualization shows:
+Live visualization displays:
 
-- selected network features (e.g., rate, sload, dload)
-- HTM cyber-state (anomaly-driven state estimate)
-- true drift boundaries (red dashed lines)
-- detected drift spikes (orange dots)
-- magenta lag bars quantifying detection latency
+• selected network-flow features (e.g., rate, sload, dload)
+• HTM-State (EMA of anomaly)
+• true drift boundaries (red dashed lines)
+• detected drift spikes (orange dots)
+• magenta lag bars measuring detection latency
 
-This demonstrates **domain generality** —  
-HTM-State adapts online whether its input is human control, network traffic,  
-or machine sensor data.
+Together, these illustrate HTM-State’s **domain generality** —
+the same architecture adapts online whether its input is
+human behavior, cyber traffic, or machine sensor data.
