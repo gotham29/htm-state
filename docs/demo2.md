@@ -44,6 +44,7 @@ Drift 2: boundary at step 1500 (t=150.000s) → detected at step 1534 (t=153.400
 
 Average detection lag over 3 drifts: **4.7 s**
 ```
+### 🔎 Interpretation
 
 This demonstrates **model-free cyber drift detection** using
 the same unsupervised online pipeline validated in Demo 1.
@@ -56,10 +57,6 @@ python -m scripts.live_demo_cyber \
     --rate-hz 10
 ```
 
-### 🔎 Interpretation
-
-* HTM-State again detects the known shifts quickly & precisely, but not as much as Demo 1.
-
 ### 📌 Takeaway
 
-* This second promising result supports the **domain generality** of HTM-State. 
+* The second promising result supports the **domain generality** of HTM-State. 

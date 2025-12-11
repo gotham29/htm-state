@@ -64,12 +64,12 @@ Transition 0: boundary at step 1600 → detected at step 1615, lag = 15 steps (1
 Average detection lag: 15 steps (1.5 seconds)
 ```
 
+### 🔎 Interpretation
+
 HTM-State typically detects high-drift onset within 1–3 seconds @ 10 Hz,
 even when drift evolves gradually and includes noisy sensor variation.
 
 ## 🎥 Live Visualization
-
-### ▶️ Run (live drift monitoring)
 
 ```bash
 python -m scripts.live_demo_manufacturing \
@@ -78,12 +78,9 @@ python -m scripts.live_demo_manufacturing \
     --step-stride 3
 ```
 
-### 🔎 Interpretation
-* HTM-State is again both fast & precise, with short lag bars + low false alarms.
-
 ### 📌 Takeaway
 
-- Achieved low-latency detection of manufacturing process drift when drift evolves slowly across hundreds of timesteps
+- HTM-State achieves low-latency detection of manufacturing process drift when drift evolves slowly across hundreds of timesteps
 - No labels, retraining, or supervised models needed  
 - Smooth anomaly → state → spike pipeline works across domains  
 - Drift is detected within **1–3 seconds @ 10 Hz**  

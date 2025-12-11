@@ -52,6 +52,8 @@ Lag = **1 step (0.100 s @ 10 Hz)**
 Average detection lag: **0.1 seconds**
 ```
 
+### 🔎 Interpretation
+
 ✔ Reaction was **nearly instantaneous (0.1 s @ 10 Hz)**
 ✔ No supervision, calibration, or retraining
 ✔ Same pipeline as workload + cyber — **no domain-specific tuning required**
@@ -65,9 +67,6 @@ python -m scripts.live_demo_healthcare \
     --csv demos/healthcare_demo/operator_stream.csv \
     --rate-hz 10
 ```
-
-### 🔎 Interpretation
-* HTM-State is again both fast & precise, with short lag bars + low false alarms.
 
 ---
 

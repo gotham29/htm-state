@@ -70,9 +70,6 @@ The live visualization shows two scrolling plots:
 ❌ spikes long after the boundary → slow reaction  
 ❌ spikes before the boundary → overly sensitive detector 
 
-### 🔎 Interpretation
-* HTM-State **detected behavioral state shifts** with strong speed & precision.
-
 ---
 
 ### 📌 Takeaway  
