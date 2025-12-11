@@ -1,19 +1,19 @@
 ## 🏥 Demo 3 — Healthcare Operator Workload
 
 This demo applies HTM-State to **clinical operator behavior**  
-(e.g., ICU nurses, surgeons, interventionalists) — detecting  
-**workload transitions and emerging overload**  
-using the *same online pipeline* proven in Demo 1 and Demo 2.
+(e.g., ICU nurses, surgeons, interventionalists), detecting  
+**workload transitions and emerging overload** using the  
+*same unsupervised online pipeline* validated in Demos 1 & 2.
 
 ---
 
 ### 🩺 Scenario
 
-A synthetic operator stream was generated with drift in:  
-- `motion_energy`  
-- `cursor_velocity`  
-- `interaction_density`  
-- `task_variability`
+A synthetic operator stream was generated with drift across:  
+• `motion_energy`  
+• `cursor_velocity`  
+• `interaction_density`  
+• `task_variability`
 
 Two embedded regime transitions were inserted:  
 **baseline → elevated workload → overload**  
@@ -25,10 +25,10 @@ expressed through motion, interaction rhythm, and task complexity.
 > Can HTM-State surface **emerging overload / performance change**
 > fast enough to matter for safety?
 
-As in Demos 1 and 2, HTM-State must:
+As in Demos 1 & 2, HTM-State must:  
 ✔ learn **online** from operator behavior  
-✔ detect **transitions** in workload state  
-✔ measure **latency** from event → detection
+✔ detect **workload transitions** in real time  
+✔ measure **latency** from event → detection  
 
 ---
 
@@ -52,9 +52,9 @@ Lag = **1 step (0.100 s @ 10 Hz)**
 Average detection lag: **0.1 seconds**
 ```
 
-✔ The system reacted almost **instantly (0.1 s @ 10 Hz)**  
-✔ using zero supervision or retraining  
-✔ same pipeline as workload + cyber — **no per-domain retuning required**
+✔ Reaction was **nearly instantaneous (0.1 s @ 10 Hz)**
+✔ No supervision, calibration, or retraining
+✔ Same pipeline as workload + cyber — **no domain-specific tuning required**
 
 ---
 
@@ -70,13 +70,13 @@ python -m scripts.live_demo_healthcare \
   <img src="docs/gifs/demo3_spike2.gif" width="950"/>
 </p>
 
-✔ Top panel — motion / interaction features  
-✔ Bottom panel — HTM-State + detected workload transitions  
-✔ Red dashed line — true event  
-✔ Orange dots — detection spikes  
+✔ Top panel — motion / interaction features
+✔ Bottom panel — HTM-State + detected transitions
+✔ Red dashed line — true event
+✔ Orange dots — detection spikes
 ✔ Magenta bars — detection lag visualization
 
-As in Demos 1 & 2: short lag bars + low false alarms = correct behavior.
+As with Demos 1 & 2, short lag bars + low false alarms = correct behavior.
 
 ---
 
@@ -84,11 +84,11 @@ As in Demos 1 & 2: short lag bars + low false alarms = correct behavior.
 
 Demo 3 extends HTM-State into high-stakes **human-in-the-loop** settings, showing:
 
-• workload awareness **without labels**  
-• adaptive detection **without retraining**  
-• **identical pipeline** across pilots → cyber analysts → clinicians  
+• workload awareness **without labels**
+• adaptive detection **without retraining**
+• **same pipeline** across pilots → cyber analysts → clinicians
 
 This positions the system for:  
-• real-time patient safety monitoring  
-• staffing / acuity-aware decision support  
-• AR/VR guidance and operator feedback systems
+• real-time patient safety monitoring
+• acuity-aware staffing / decision support
+• AR/VR guidance and operator-feedback systems
