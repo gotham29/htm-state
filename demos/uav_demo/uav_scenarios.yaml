@@ -1,0 +1,21 @@
+processed_dir: demos/uav_demo/raw
+
+scenarios:
+  no_failure:
+    dir: carbonZ_2018-10-05-14-37-22_1_no_failure
+
+  engine_failure:
+    dir: carbonZ_2018-09-11-11-56-30_engine_failure
+    boundary: failure_status
+
+  elevator_failure:
+    dir: carbonZ_2018-09-11-14-41-51_elevator_failure
+    boundary: failure_status
+
+  rudder_left_failure:
+    dir: carbonZ_2018-09-11-15-06-34_3_rudder_left_failure
+    boundary: failure_status
+
+  aileron_failure:
+    dir: carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure
+    boundary: failure_status

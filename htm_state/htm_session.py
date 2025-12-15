@@ -25,6 +25,8 @@ class _ScalarBucket:
         self.n, self.w = n, max(3, w)
         self.vmin, self.vmax = vmin, vmax
         self.range = max(1e-9, vmax - vmin)
+        self.sp_learning = False  # default: OFF
+
 
     def encode(self, x: float) -> np.ndarray:
         x = min(self.vmax, max(self.vmin, x))
@@ -112,7 +114,7 @@ class HTMSession:
         chunks = [self.encoders[n].encode(float(feats[n])) for n in self.feature_names]
         return np.concatenate(chunks)
 
-    def step(self, feats: Dict[str, float]) -> Dict[str, float]:
+    def step(self, feats: Dict[str, float], learn: bool = True) -> Dict[str, float]:
         """
         One timestep of HTM processing.
 
@@ -120,6 +122,8 @@ class HTMSession:
         ----------
         feats : dict[str, float]
             Feature values for this timestep.
+        learn : bool
+            If False, Temporal Memory runs in inference-only mode (no learning updates).
 
         Returns
         -------
@@ -131,8 +135,14 @@ class HTMSession:
         self.input_sdr.sparse = np.nonzero(x)[0]
 
         active_columns = SDR(self.sp.getColumnDimensions())
-        self.sp.compute(self.input_sdr, True, active_columns)
-        self.tm.compute(active_columns, learn=True)
+
+        # Default recommendation: SP learning OFF (stable encoder->columns mapping, less compute).
+        # Add self.sp_learning = False in __init__ (or wherever you configure the session).
+        sp_learn = bool(getattr(self, "sp_learning", False))
+        self.sp.compute(self.input_sdr, sp_learn, active_columns)
+
+        # TM learning controlled by caller (so you can freeze after boundary)
+        self.tm.compute(active_columns, learn=bool(learn))
 
         anomaly = float(self.tm.anomaly)
         if self._ema is None:

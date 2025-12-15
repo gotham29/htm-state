@@ -95,6 +95,19 @@ This structure is **domain-agnostic** — swapping input features yields new app
 
 ---
 
+## 🧩 API (Coming soon)
+
+A minimal, importable API for using HTM-State in notebooks and production code:
+
+- `HTMSession` for streaming anomaly + state (`step(feats, learn=...)`)
+- A unified `SpikeDetector` interface
+- Helpers to build feature ranges and encoder configs
+- Example: “train on normal → freeze learning → monitor in deployment”
+
+Tracked in: `docs/api.md` (placeholder)
+
+---
+
 ## ⚡ Quickstart
 
 ```bash
