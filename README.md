@@ -184,9 +184,9 @@ Measures adaptation time — critical in safety systems.
 
 | Phase  | Target |
 |-------|------------------------------|
-| Demo 1 | UAV failure            (complete — offline + live) |
-| Demo 2 | Cyber drift detection  (complete — offline + live) |
-| Demo 3 | ?                      (TODO) |
+| Demo 1 | UAV failure             |
+| Demo 2 | Cyber drift detection   |
+| Demo 3 | ?                       |
 
 ---
 
