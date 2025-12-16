@@ -148,8 +148,6 @@ normal dynamics online, then surfacing both spikes (fast transitions) and
 
 ---
 
----
-
 ## 🔐 Demo 2 — Cyber Behavior Drift Detection (UNSW-NB15)
 
 HTM-State detects **behavioral drift** in streaming network flow statistics  
@@ -159,8 +157,6 @@ no supervised classifiers or retraining loops.
 
 👉 **Full demo (offline + live + details):**  
 [`docs/demos/cyber_demo.md`](docs/demos/cyber_demo.md)
-
----
 
 ---
 
