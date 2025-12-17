@@ -1,5 +1,7 @@
 # UAV Demo (ALFA Dataset)
 
+![ALFA UAV flight platform and telemetry context](generated/alfa.jpg)
+
 This demo evaluates **HTM-State** on real UAV flight data from the **ALFA (Autonomous Learning Flight Arena)** dataset.
 
 Rather than relying on a small number of hand-selected examples, we perform an **offline sweep across all eligible ALFA runs**, spanning:
@@ -14,6 +16,12 @@ The goal is to assess, in a broad and systematic way, whether HTM-State shows **
 After the offline sweep, a small number of representative runs are selected for **live streaming visualizations**, which provide intuition but do not drive the reported results.
 
 ## At a glance
+
+### What a live run looks like
+
+![Live HTM-State response during UAV engine failure](generated/figures/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png)
+
+*Top: normalized flight signals. Bottom: HTM-State with spike and sustained detections relative to the injected failure boundary.*
 
 **Figure 1** summarizes detection performance, latency, and persistence across all ALFA UAV failure types under a strict, unsupervised evaluation protocol.
 
