@@ -13,7 +13,7 @@ for p in (str(REPO_ROOT), str(SCRIPTS_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from offline_demo_uav import evaluate_uav_csv, parse_args as offline_parse_args
+from demo_offline_uav import evaluate_uav_csv, parse_args as offline_parse_args
 
 
 def classify_failure(run_id: str) -> str:
@@ -47,8 +47,8 @@ def classify_failure(run_id: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser("Offline sweep over generated ALFA UAV streams (strict benchmark)")
-    p.add_argument("--generated-dir", type=str, default="demos/uav_demo/generated")
-    p.add_argument("--outdir", type=str, default="results/uav_sweep")
+    p.add_argument("--generated-dir", type=str, default="demos/uav/generated/streams")
+    p.add_argument("--outdir", type=str, default="demos/uav/generated/results/uav_sweep")
     p.add_argument("--glob", type=str, default="*.csv")
     return p.parse_args()
 
@@ -59,7 +59,13 @@ def main() -> None:
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    csv_paths = sorted(gen_dir.glob(args.glob))
+    # Support both:
+    #   generated/*.csv
+    #   generated/<failure_type>/*.csv
+    if "**" in args.glob:
+        csv_paths = sorted(gen_dir.rglob("*.csv"))
+    else:
+        csv_paths = sorted(gen_dir.rglob(args.glob))
     if not csv_paths:
         raise FileNotFoundError(f"No CSVs found in {gen_dir} with glob {args.glob!r}")
 

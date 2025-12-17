@@ -243,4 +243,5 @@ demos/uav/generated/
 # Optional: ignore any other results (but allow the uav_sweep exceptions above)
 results/**
 
-
+# UAV demo generated evaluation artifacts
+demos/uav/generated/results/

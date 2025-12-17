@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 import re
 import shutil
@@ -171,7 +172,10 @@ def main():
     processed_dir = Path(args.processed_dir).expanduser().resolve()
     repo_root = Path(args.repo_root).expanduser().resolve()
 
-    out_raw = repo_root / "demos" / "uav_demo" / "raw"
+    # New repo layout:
+    # demos/uav/raw/<failure_type>/<run_id>/topic_files.csv
+    out_raw = repo_root / "demos" / "uav" / "raw"
+ 
     out_raw.mkdir(parents=True, exist_ok=True)
 
     if args.mode == "best":
@@ -192,7 +196,10 @@ def main():
     print("\nCopying files:")
     for folder, ftype in sorted(folders, key=lambda x: (x[1], x[0])):
         src = processed_dir / folder
-        dst = out_raw / folder
+        # Group by failure type to keep the repo navigable.
+        # Example:
+        # demos/uav/raw/engine_failure/carbonZ_2018-..._engine_failure/
+        dst = out_raw / ftype / folder
         copied = copy_needed_files(src, dst, include_optional=args.include_optional)
 
         print(f"- {folder}")

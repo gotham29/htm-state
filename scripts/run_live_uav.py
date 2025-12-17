@@ -47,11 +47,11 @@ def classify_failure(run_id: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser("Generate representative live plots from ALFA UAV sweep results.")
-    p.add_argument("--per-run", type=str, default="results/uav_sweep/per_run.csv")
-    p.add_argument("--coverage", type=str, default="results/uav_sweep/coverage.csv")
-    p.add_argument("--outdir", type=str, default="results/uav_sweep/figures")
-    p.add_argument("--sleep", type=float, default=0.0, help="Passed to live_demo_uav.py --sleep (0 = as fast as possible).")
-    p.add_argument("--dpi", type=int, default=200, help="Passed to live_demo_uav.py --save-fig-dpi.")
+    p.add_argument("--per-run", type=str, default="demos/uav/generated/results/uav_sweep/per_run.csv")
+    p.add_argument("--coverage", type=str, default="demos/uav/generated/results/uav_sweep/coverage.csv")
+    p.add_argument("--outdir", type=str, default="demos/uav/generated/figures/selected")
+    p.add_argument("--sleep", type=float, default=0.0, help="Passed to demo_live_uav.py --sleep (0 = as fast as possible).")
+    p.add_argument("--dpi", type=int, default=200, help="Passed to demo_live_uav.py --save-fig-dpi.")
     p.add_argument(
         "--only",
         type=str,
@@ -143,7 +143,13 @@ def main() -> None:
     coverage = pd.read_csv(coverage_path)
 
     # Build run_id -> csv_path map (coverage includes excluded runs too)
-    run_to_csv: Dict[str, str] = dict(zip(coverage["run_id"].astype(str), coverage["csv_path"].astype(str)))
+    # Normalize csv_path so live runs work regardless of CWD.
+    run_to_csv: Dict[str, str] = {}
+    for rid, pth in zip(coverage["run_id"].astype(str), coverage["csv_path"].astype(str)):
+        p = Path(pth)
+        if not p.is_absolute():
+            p = (Path.cwd() / p).resolve()
+        run_to_csv[rid] = str(p)
 
     picks = pick_representatives(per_run)
 
@@ -163,7 +169,7 @@ def main() -> None:
 
     selected_rows: List[Dict[str, str]] = []
 
-    live_script = (Path(__file__).resolve().parent / "live_demo_uav.py").resolve()
+    live_script = (Path(__file__).resolve().parent / "demo_live_uav.py").resolve()
     if not live_script.exists():
         raise FileNotFoundError(f"Expected live demo script at: {live_script}")
 
@@ -172,7 +178,7 @@ def main() -> None:
         for label, run_id in items:
             csv_path = run_to_csv.get(run_id)
             if not csv_path:
-                print(f"[run_live_demo_uav_selected] SKIP (no csv_path): {run_id}")
+                print(f"[run_demo_live_uav] SKIP (no csv_path): {run_id}")
                 continue
 
             ft_dir = outdir / ftype
@@ -192,7 +198,7 @@ def main() -> None:
                 str(float(args.sleep)),
             ]
 
-            print(f"[run_live_demo_uav_selected] RUN: {run_id} ({ftype}/{label})")
+            print(f"[run_live_uav] RUN: {run_id} ({ftype}/{label})")
             print("  " + " ".join(cmd))
             subprocess.check_call(cmd)
             n_calls += 1
@@ -211,9 +217,9 @@ def main() -> None:
     sel_out = outdir.parent / "selected_runs.csv"
     sel_df.to_csv(sel_out, index=False)
 
-    print(f"[run_live_demo_uav_selected] figures written under: {outdir}")
-    print(f"[run_live_demo_uav_selected] wrote: {sel_out}")
-    print(f"[run_live_demo_uav_selected] total runs plotted: {n_calls}")
+    print(f"[run_live_uav] figures written under: {outdir}")
+    print(f"[run_live_uav] wrote: {sel_out}")
+    print(f"[run_live_uav] total runs plotted: {n_calls}")
 
 
 if __name__ == "__main__":

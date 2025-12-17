@@ -31,9 +31,9 @@ def _safe_float(x) -> Optional[float]:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser("Plot HTM-State ALFA UAV summary figure (Figure 1).")
-    p.add_argument("--summary", type=str, default="results/uav_sweep/summary_by_type.csv")
-    p.add_argument("--per-run", type=str, default="results/uav_sweep/per_run.csv")
-    p.add_argument("--out", type=str, default="results/uav_sweep/figure1_summary.png")
+    p.add_argument("--summary", type=str, default="demos/uav/generated/results/uav_sweep/summary_by_type.csv")
+    p.add_argument("--per-run", type=str, default="demos/uav/generated/results/uav_sweep/per_run.csv")
+    p.add_argument("--out", type=str, default="demos/uav/generated/results/uav_sweep/figure1_summary.png")
     p.add_argument("--title", type=str, default="HTM-State Benchmark on ALFA UAV Failures (Strict, Unsupervised)")
     p.add_argument(
         "--order",

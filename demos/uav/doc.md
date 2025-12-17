@@ -189,15 +189,13 @@ Notably, HTM-State exhibits increasing post-boundary persistence from engine to 
 
 These are short “heartbeat-style” previews of the streaming visualization.
 
-> If this section is empty on GitHub, it usually means the GIFs weren’t committed (often due to `.gitignore`).
-
-- `demos/uav/generated/gifs/spike1.gif`
-- `demos/uav/generated/gifs/spike2.gif`
-- `demos/uav/generated/gifs/spike3.gif`
-
 While the offline sweep provides comprehensive quantitative coverage, a small number of runs are selected for **live streaming visualizations** to build intuition and demonstrate how HTM-State evolves over time.
 
 These figures are illustrative only; all reported metrics come from the offline sweep.
+
+**Live demo (engine failure — early instability):**
+
+<video src="generated/media/uav_engine.mp4" controls width="720"></video>
 
 ### Selection criteria
 

@@ -468,3 +468,17 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+"""
+python scripts/live_demo_uav.py \
+  --csv demos/uav/generated/streams/carbonZ_2018-10-18-11-08-24_no_failure.csv \
+  --sleep 0.1
+
+python scripts/live_demo_uav.py \
+  --csv demos/uav/generated/streams/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj.csv \
+  --sleep 0.1
+
+python scripts/live_demo_uav.py \
+  --csv demos/uav/generated/streams/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure.csv \
+  --sleep 0.1
+"""

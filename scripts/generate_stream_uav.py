@@ -47,8 +47,32 @@ def infer_scenario_from_dir(d: Path) -> dict:
         spec["boundary"] = "failure_status"
     return spec
 
-def resolve_scenario_files(base_dir: Path, scenario: dict) -> dict:
-    d = base_dir / scenario["dir"]
+def iter_run_dirs(raw_dir: Path):
+    """
+    Yield (failure_type, run_dir) pairs.
+
+    Supports either:
+      - raw/<run_id>/...csv
+      - raw/<failure_type>/<run_id>/...csv   (your new layout)
+    """
+    for p in sorted(raw_dir.iterdir()):
+        if not p.is_dir():
+            continue
+
+        # Case A: raw/<run_id>/...csv (run folder directly under raw/)
+        if any(c.is_file() and c.suffix.lower() == ".csv" for c in p.iterdir()):
+            yield ("unknown", p)
+            continue
+
+        # Case B: raw/<failure_type>/<run_id>/...csv
+        for r in sorted(p.iterdir()):
+            if not r.is_dir():
+                continue
+            if any(c.is_file() and c.suffix.lower() == ".csv" for c in r.iterdir()):
+                yield (p.name, r)
+
+def resolve_scenario_files(run_dir: Path, scenario: dict) -> dict:
+    d = run_dir
     if not d.exists():
         raise FileNotFoundError(d)
 
@@ -58,7 +82,7 @@ def resolve_scenario_files(base_dir: Path, scenario: dict) -> dict:
             return None
         return matches[0]
 
-    vfr = pick("*mavros-vfr_hud.csv")
+    vfr = pick("*mavros-vfr_hud*.csv")
     if vfr is None:
         raise FileNotFoundError("Missing mavros-vfr_hud.csv")
 
@@ -452,7 +476,7 @@ def main():
     ap.add_argument("--rate-hz", type=float, default=10.0)
 
     # outputs
-    ap.add_argument("--out-dir", default="demos/uav_demo", help="Default output directory")
+    ap.add_argument("--out-dir", default="demos/uav/generated", help="Output root; streams go under <out-dir>/streams/")
     ap.add_argument("--out", type=str, default=None, help="Optional explicit output CSV path (single scenario)")
 
     args = ap.parse_args()
@@ -468,13 +492,10 @@ def main():
         out_dir = Path(args.out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        for d in sorted(raw_dir.iterdir()):
-            if not d.is_dir():
-                continue
-
-            spec = infer_scenario_from_dir(d)
+        for failure_type, run_dir in iter_run_dirs(raw_dir):
+            spec = infer_scenario_from_dir(run_dir)
             try:
-                files = resolve_scenario_files(raw_dir, spec)
+                files = resolve_scenario_files(run_dir, spec)
                 stream, tinfo = build_stream(
                     files["vfr"],
                     files["status"],
@@ -484,7 +505,7 @@ def main():
                     rate_hz=args.rate_hz,
                 )
             except Exception as e:
-                print(f"[generate_uav_stream] SKIP {d.name}: {e}", file=sys.stderr)
+                print(f"[generate_uav_stream] SKIP {run_dir.name}: {e}", file=sys.stderr)
                 continue
 
             bidx = None
@@ -497,8 +518,13 @@ def main():
                     stream_len=len(stream),
                 )
 
-            out_path = out_dir / f"{d.name}.csv"
-            write_one(d.name, stream, bidx, out_path)
+            # Mirror structure in generated/streams:
+            #   generated/streams/<failure_type>/<run_id>.csv
+            # If failure_type was unknown (flat raw/ layout), put it under streams/unknown/.
+            streams_dir = out_dir / "streams"
+            rel_dir = streams_dir / (failure_type if failure_type != "unknown" else "unknown")
+            out_path = rel_dir / f"{run_dir.name}.csv"
+            write_one(run_dir.name, stream, bidx, out_path)
 
         return
 
@@ -523,7 +549,7 @@ def main():
         scenarios = cfg["scenarios"]
 
         def run_one(name, spec):
-            files = resolve_scenario_files(base, spec)
+            files = resolve_scenario_files(run_dir.parent, spec)
             stream, tinfo = build_stream(files["vfr"], files["status"], files["pitch"], files["roll"], files["yaw"], rate_hz=args.rate_hz)
 
             bidx = None
