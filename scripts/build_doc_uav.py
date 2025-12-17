@@ -38,6 +38,7 @@ LABEL_TITLES = {
     "miss": "Miss",
 }
 
+DEFAULT_FIG_ROOT = "demos/uav/generated/figures"
 
 @dataclass(frozen=True)
 class Row:
@@ -65,6 +66,12 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="",
         help="Optional CSV manifest instead of YAML (e.g. results/uav_sweep/selected_runs.csv).",
+    )
+    p.add_argument(
+        "--fig-root",
+        type=str,
+        default=DEFAULT_FIG_ROOT,
+        help="Root directory for gallery images (expects subfolders per failure_type).",
     )
     p.add_argument(
         "--repo-root",
@@ -97,7 +104,7 @@ def _to_repo_rel(path: str, repo_root: Path) -> str:
     return str(p)
 
 
-def load_manifest(manifest_path: Path, manifest_csv: Optional[Path], repo_root: Path) -> List[Row]:
+def load_manifest(manifest_path: Path, manifest_csv: Optional[Path], repo_root: Path, fig_root: Path) -> List[Row]:
     # CSV path still supported (old mode)
     if manifest_csv and manifest_csv.exists():
         df = pd.read_csv(manifest_csv)
@@ -181,8 +188,20 @@ def load_manifest(manifest_path: Path, manifest_csv: Optional[Path], repo_root: 
                 if not run_id or not tag or not fig_name:
                     continue
 
-                # Join fig_dir + figure filename (and keep repo-relative)
-                fig_path = str(Path(fig_dir) / fig_name) if fig_dir else fig_name
+                # Resolve figure path.
+                # New repo layout: demos/uav/generated/figures/<failure_type>/<figure>.png
+                # If the manifest figure already includes subdirs, respect it.
+                fig_path: str
+                fig_rel = Path(fig_name)
+                if fig_rel.is_absolute():
+                    fig_path = str(fig_rel)
+                elif fig_rel.parts and fig_rel.parts[0] in ("demos", "results"):
+                    # already repo-relative path
+                    fig_path = str(fig_rel)
+                else:
+                    # Prefer --fig-root (new layout). Fall back to manifest fig_dir if provided.
+                    base = fig_root if str(fig_root) else Path(fig_dir) if fig_dir else Path(".")
+                    fig_path = str(base / str(failure_type) / fig_name)
 
                 rows.append(
                     Row(
@@ -282,19 +301,20 @@ def splice_doc(doc_text: str, gallery_block: str) -> str:
 def main() -> None:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
+    fig_root = Path(args.fig_root).resolve()
 
     doc_path = Path(args.doc)
     manifest_path = Path(args.manifest)
     manifest_csv = Path(args.manifest_csv) if args.manifest_csv else None
 
-    rows = load_manifest(manifest_path, manifest_csv, repo_root)
+    rows = load_manifest(manifest_path, manifest_csv, repo_root, fig_root)
     gallery = render_gallery(rows)
 
     doc_text = doc_path.read_text()
     new_text = splice_doc(doc_text, gallery)
 
     doc_path.write_text(new_text)
-    print(f"[build_demo_uav_md] wrote: {doc_path}")
+    print(f"[build_doc_uav] wrote: {doc_path}")
 
 
 if __name__ == "__main__":

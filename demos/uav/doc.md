@@ -312,38 +312,39 @@ python scripts/run_live_uav.py \
 
 | Example | Plot | Run ID | Quick metrics |
 |---|---:|---|---|
-| **Baseline (no failure)** | ![](results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-08-24_no_failure__baseline.png) | `carbonZ_2018-10-18-11-08-24_no_failure` | — |
+| **Baseline (no failure)** | ![](demos/uav/generated/figures/no_failure/carbonZ_2018-10-18-11-08-24_no_failure__baseline.png) | `carbonZ_2018-10-18-11-08-24_no_failure` | — |
 
 ### `engine_failure`
 
 | Example | Plot | Run ID | Quick metrics |
 |---|---:|---|---|
-| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png) | `carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj` | — |
-| **Hard spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-11-56-30_engine_failure__hard_spike.png) | `carbonZ_2018-09-11-11-56-30_engine_failure` | — |
-| **Miss** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-22-07_2_engine_failure__miss.png) | `carbonZ_2018-09-11-14-22-07_2_engine_failure` | — |
+| **Typical spike** | ![](demos/uav/generated/figures/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png) | `carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj` | — |
+| **Hard spike** | ![](demos/uav/generated/figures/engine_failure/carbonZ_2018-09-11-11-56-30_engine_failure__hard_spike.png) | `carbonZ_2018-09-11-11-56-30_engine_failure` | — |
+| **Miss** | ![](demos/uav/generated/figures/engine_failure/carbonZ_2018-09-11-14-22-07_2_engine_failure__miss.png) | `carbonZ_2018-09-11-14-22-07_2_engine_failure` | — |
 
 ### `elevator_failure`
 
 | Example | Plot | Run ID | Quick metrics |
 |---|---:|---|---|
-| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-05-11_1_elevator_failure__typical_spike.png) | `carbonZ_2018-09-11-15-05-11_1_elevator_failure` | — |
-| **Sustained-only** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-41-51_elevator_failure__sustained_only.png) | `carbonZ_2018-09-11-14-41-51_elevator_failure` | — |
+| **Typical spike** | ![](demos/uav/generated/figures/elevator_failure/carbonZ_2018-09-11-15-05-11_1_elevator_failure__typical_spike.png) | `carbonZ_2018-09-11-15-05-11_1_elevator_failure` | — |
+| **Sustained-only** | ![](demos/uav/generated/figures/elevator_failure/carbonZ_2018-09-11-14-41-51_elevator_failure__sustained_only.png) | `carbonZ_2018-09-11-14-41-51_elevator_failure` | — |
 
 ### `rudder_failure`
 
 | Example | Plot | Run ID | Quick metrics |
 |---|---:|---|---|
-| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-06-34_2_rudder_right_failure__typical_spike.png) | `carbonZ_2018-09-11-15-06-34_2_rudder_right_failure` | — |
-| **Hard spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-06-34_1_rudder_right_failure__hard_spike.png) | `carbonZ_2018-09-11-15-06-34_1_rudder_right_failure` | — |
+| **Typical spike** | ![](demos/uav/generated/figures/rudder_failure/carbonZ_2018-09-11-15-06-34_2_rudder_right_failure__typical_spike.png) | `carbonZ_2018-09-11-15-06-34_2_rudder_right_failure` | — |
+| **Hard spike** | ![](demos/uav/generated/figures/rudder_failure/carbonZ_2018-09-11-15-06-34_1_rudder_right_failure__hard_spike.png) | `carbonZ_2018-09-11-15-06-34_1_rudder_right_failure` | — |
 
 ### `multi_fault`
 
 | Example | Plot | Run ID | Quick metrics |
 |---|---:|---|---|
-| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure__typical_spike.png) | `carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure` | — |
-| **Hard spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png) | `carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure` | — |
+| **Typical spike** | ![](demos/uav/generated/figures/multi_fault/carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure__typical_spike.png) | `carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure` | — |
+| **Hard spike** | ![](demos/uav/generated/figures/multi_fault/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png) | `carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure` | — |
 
 <!-- AUTO-GALLERY:END -->
+
 
 
 The offline sweep provides the *quantitative* result (Figure 1 + CSV tables).  
