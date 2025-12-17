@@ -103,6 +103,10 @@ def _to_repo_rel(path: str, repo_root: Path) -> str:
             return p.name
     return str(p)
 
+def _to_doc_rel(repo_rel_path: str, repo_root: Path, doc_dir: Path) -> str:
+    p = Path(repo_rel_path)
+    abs_p = (repo_root / p).resolve() if not p.is_absolute() else p.resolve()
+    return str(abs_p.relative_to(doc_dir.resolve()))
 
 def load_manifest(manifest_path: Path, manifest_csv: Optional[Path], repo_root: Path, fig_root: Path) -> List[Row]:
     # CSV path still supported (old mode)
@@ -303,11 +307,24 @@ def main() -> None:
     repo_root = Path(args.repo_root).resolve()
     fig_root = Path(args.fig_root).resolve()
 
-    doc_path = Path(args.doc)
+    doc_path = Path(args.doc).resolve()
+    doc_dir = doc_path.parent.resolve()
+
     manifest_path = Path(args.manifest)
     manifest_csv = Path(args.manifest_csv) if args.manifest_csv else None
 
     rows = load_manifest(manifest_path, manifest_csv, repo_root, fig_root)
+    # Convert repo-relative paths into doc-relative links so GitHub renders images correctly.
+    fixed: List[Row] = []
+    for r in rows:
+        fig = r.figure_path
+        if fig:
+            fig = _to_doc_rel(fig, repo_root=repo_root, doc_dir=doc_dir)
+        csvp = r.csv_path
+        if csvp:
+            csvp = _to_doc_rel(csvp, repo_root=repo_root, doc_dir=doc_dir)
+        fixed.append(Row(**{**r.__dict__, "figure_path": fig, "csv_path": csvp}))
+    rows = fixed
     gallery = render_gallery(rows)
 
     doc_text = doc_path.read_text()
