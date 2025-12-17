@@ -204,7 +204,6 @@ Notes:
 - Median lags are computed only over detected runs.
 - For `no_failure`, detection lag metrics are not applicable; false alarms are the primary indicator.
 
-![Figure 1: ALFA summary](results/uav_sweep/figure1_summary.png)
 Notably, HTM-State exhibits increasing post-boundary persistence from engine to control-surface to multi-fault scenarios, consistent with increasing workload severity rather than mere novelty.
 
 **Output file:** `results/uav_sweep/summary_by_type.csv`

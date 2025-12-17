@@ -1,3 +1,4 @@
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -216,11 +217,30 @@ __marimo__/
 __pycache__/
 *.pyc
 
-# Demo data / generated artifacts (avoid committing ALFA-derived files)
-demos/uav_demo/raw/
-demos/uav_demo/generated/
-results/uav_sweep/
+#
+# Demo data / generated artifacts
+#
+# We do NOT want to commit raw ALFA-derived inputs, but we DO want to commit
+# the small representative figures + summary tables used in demos/uav/doc.md.
+#
 
-# Optional: ignore any other demo outputs
-results/
+# Raw demo inputs (do not commit)
+demos/uav/raw/
+
+# Generated demo artifacts:
+# - ignore by default...
+demos/uav/generated/
+# - ...but KEEP the representative figures used by the doc
+!demos/uav/generated/
+!demos/uav/generated/figures/
+!demos/uav/generated/figures/**
+
+# Sweep outputs:
+# - allow the UAV sweep summary artifacts referenced by the doc
+!results/uav_sweep/
+!results/uav_sweep/**
+
+# Optional: ignore any other results (but allow the uav_sweep exceptions above)
+results/**
+
 
