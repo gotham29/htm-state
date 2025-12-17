@@ -117,6 +117,34 @@ This metric complements detection lag by capturing **severity and consistency**,
 
 The offline sweep produces two primary result tables:
 
+### Overview and key findings
+
+The strict offline sweep across the ALFA UAV dataset demonstrates that **HTM-State exhibits consistent, fault-dependent behavior across diverse failure modes**, using a single unsupervised configuration and without per-scenario tuning.
+
+Several high-level patterns emerge:
+
+- **Detection behavior is strongly failure-type dependent.**  
+  Control-surface and multi-fault scenarios are detected more reliably than engine failures, reflecting differences in how faults manifest in pilot control behavior.
+
+- **Spike-based detection and sustained elevation capture complementary phenomena.**  
+  Abrupt faults often produce transient novelty (spikes), while non-compensable control degradations produce prolonged state elevation. These mechanisms should not be conflated.
+
+- **Detection latency is measured in seconds, not instantaneous steps.**  
+  Median detection lags range from several seconds to tens of seconds depending on fault type, consistent with gradual workload emergence rather than threshold-triggered alarms.
+
+- **False alarms remain bounded under nominal conditions.**  
+  Pre-boundary spike rates remain low across all failure types, including no-failure baselines, indicating stability rather than hypersensitivity.
+
+- **Post-boundary state persistence distinguishes compensable vs. sustained failures.**  
+  Engine failures tend to show transient responses with low persistence, while elevator, aileron, and multi-fault scenarios exhibit sustained elevation consistent with prolonged workload impact.
+
+These trends are summarized visually in **Figure 1**, which aggregates detection rate, latency, and persistence across all evaluated runs.
+
+> **Figure 1 (Summary).** HTM-State benchmark performance on the ALFA UAV dataset under a strict, unsupervised evaluation protocol.  
+> (A) Detection rates by failure type for spike-based and sustained-elevation mechanisms.  
+> (B) Distribution of spike detection latency across failure types.  
+> (C) Relationship between post-boundary state persistence and false-alarm rate, highlighting separation between compensable and non-compensable failures.
+
 1. A **per-run results table**, containing one row per UAV flight
 2. An **aggregated summary table**, grouped by failure type
 
@@ -163,6 +191,9 @@ Notes:
 - Detection rates are computed as the fraction of runs where detection occurred.
 - Median lags are computed only over detected runs.
 - For `no_failure`, detection lag metrics are not applicable; false alarms are the primary indicator.
+
+![Figure 1: ALFA summary](results/uav_sweep/figure1_summary.png)
+Notably, HTM-State exhibits increasing post-boundary persistence from engine to control-surface to multi-fault scenarios, consistent with increasing workload severity rather than mere novelty.
 
 **Output file:** `results/uav_sweep/summary_by_type.csv`
 
