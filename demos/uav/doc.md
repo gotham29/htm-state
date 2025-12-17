@@ -30,7 +30,8 @@ After the offline sweep, a small number of representative runs are selected for 
 > Spike-based and sustained-elevation detection capture complementary workload dynamics.  
 > Control-surface and multi-fault scenarios exhibit higher persistence than compensable engine failures.
 
-## Dataset and evaluation scope
+<details>
+<summary><b>Dataset and evaluation scope</b></summary>
 
 This demo uses flight logs from the **ALFA UAV dataset**, after preprocessing and stream generation.  
 All evaluation is performed on per-run CSV streams located under:
@@ -55,14 +56,17 @@ Examples:
 - `carbonZ_..._no_failure` → `no_failure`
 
 This lightweight name-based classification allows the sweep to scale cleanly across the entire ALFA dataset without additional metadata.
+</details>
 
-## Metrics definition
+
+<details>
+<summary><b>Metrics definition</b></summary>
 
 Each UAV run is evaluated independently using a small set of transparent, time-aligned metrics derived from the HTM-State output. These metrics are designed to capture **timeliness**, **stability**, and **false-alarm behavior** relative to a known failure boundary.
 
 ### Primary metric: detection lag
 
-Detection lag measures how quickly HTM-State responds **after** a ground-truth failure is injected.
+Detection lag measures how quickly HTM-State responds after a known failure boundary.
 
 Two complementary detection mechanisms are evaluated:
 
@@ -103,6 +107,7 @@ This metric complements detection lag by capturing **severity and consistency**,
 
 - For runs without a failure boundary (`no_failure`), detection lag metrics are not applicable.
 - All metrics are computed without using future information beyond the current timestep.
+</details>
 
 ## Results summary
 
