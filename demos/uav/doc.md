@@ -188,17 +188,6 @@ This figure summarizes performance across failure types, including:
 
 ### Aggregated results by failure type
 
-To summarize performance across the dataset, per-run metrics are aggregated by inferred failure type.
-
-| failure_type | n_runs | spike_detect_rate | median_spike_lag_s | sust_detect_rate | median_sust_lag_s | median_false_alarms_spm | median_post_elev_frac |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| engine_failure |  |  |  |  |  |  |  |
-| aileron_failure |  |  |  |  |  |  |  |
-| rudder_failure |  |  |  |  |  |  |  |
-| elevator_failure |  |  |  |  |  |  |  |
-| multi_fault |  |  |  |  |  |  |  |
-| no_failure |  | N/A | N/A | N/A | N/A |  | N/A |
-
 Notes:
 - Detection rates are computed as the fraction of runs where detection occurred.
 - Median lags are computed only over detected runs.
@@ -209,6 +198,16 @@ Notably, HTM-State exhibits increasing post-boundary persistence from engine to 
 **Output file:** `results/uav_sweep/summary_by_type.csv`
 
 ## Representative live visualizations
+
+### Live (GIF) preview
+
+These are short “heartbeat-style” previews of the streaming visualization.
+
+> If this section is empty on GitHub, it usually means the GIFs weren’t committed (often due to `.gitignore`).
+
+- `demos/uav/generated/gifs/spike1.gif`
+- `demos/uav/generated/gifs/spike2.gif`
+- `demos/uav/generated/gifs/spike3.gif`
 
 While the offline sweep provides comprehensive quantitative coverage, a small number of runs are selected for **live streaming visualizations** to build intuition and demonstrate how HTM-State evolves over time.
 
@@ -248,9 +247,8 @@ demos/uav/generated/figures/{failure_type}/{figure}.png
 
 Run from the repo root:
 
-    python scripts/uav_select_and_copy.py \
+    python scripts/copy_data_uav.py \
       --processed-dir /path/to/ALFA/processed \
-      --repo-root /path/to/htm-state \
       --include-optional
 
 Raw scenarios are copied under:
@@ -261,13 +259,13 @@ demos/uav/raw/
 
 ### 2. Generate per-run UAV stream CSVs
 
-    python scripts/generate_uav_stream.py \
+    python scripts/generate_stream_uav.py \
       --in demos/uav/raw \
       --out demos/uav/generated
 
 ### 3. Run the offline sweep
 
-    python scripts/run_offline_uav_all.py \
+    python scripts/run_offline_uav.py \
       --generated-dir demos/uav/generated \
       --outdir results/uav_sweep
 
@@ -281,6 +279,9 @@ This produces:
     python scripts/run_live_uav.py \
       --per-run results/uav_sweep/per_run.csv \
       --outdir results/uav_sweep/figures
+
+<details>
+<summary><b>Representative plot gallery (auto-generated)</b></summary>
 
 <!-- AUTO-GALLERY:BEGIN -->
 
@@ -322,4 +323,6 @@ This produces:
 | **Hard spike** | ![](generated/figures/multi_fault/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png) | `carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure` | — |
 
 <!-- AUTO-GALLERY:END -->
+
+</details>
 
