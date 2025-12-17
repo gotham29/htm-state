@@ -1,4 +1,4 @@
-# HTM-State UAV Demo (ALFA Dataset)
+# UAV Demo (ALFA Dataset)
 
 This demo evaluates **HTM-State** on real UAV flight data from the **ALFA (Autonomous Learning Flight Arena)** dataset.
 
@@ -13,50 +13,32 @@ The goal is to assess, in a broad and systematic way, whether HTM-State shows **
 
 After the offline sweep, a small number of representative runs are selected for **live streaming visualizations**, which provide intuition but do not drive the reported results.
 
-## Dataset coverage
+## At a glance
+
+**Figure 1** summarizes detection performance, latency, and persistence across all ALFA UAV failure types under a strict, unsupervised evaluation protocol.
+
+![](../../results/uav_sweep/figure1_summary.png)
+
+> Spike-based and sustained-elevation detection capture complementary workload dynamics.  
+> Control-surface and multi-fault scenarios exhibit higher persistence than compensable engine failures.
+
+## Dataset and evaluation scope
 
 This demo uses flight logs from the **ALFA UAV dataset**, after preprocessing and stream generation.  
-All evaluation is performed on generated per-run CSV streams located under:
+All evaluation is performed on per-run CSV streams located under:
 
 ```
 demos/uav/generated/
 ```
 
-Each CSV corresponds to a single UAV flight and contains:
+Each CSV corresponds to a single UAV flight and includes:
 - Time index (`t_sec`)
-- Modeled flight features (e.g., airspeed, climb, attitude, control inputs)
-- A binary ground-truth boundary (`is_boundary`) when available
+- Flight and control features
+- A binary ground-truth failure boundary (`is_boundary`) when available
 
-### Inclusion criteria
+Runs are **included** if required columns are present and a failure boundary exists; runs without ground truth or with malformed streams are **excluded** and logged.
 
-A run is included in the offline sweep if **all** of the following hold:
-
-- The generated CSV contains required columns:
-  - `t_sec`
-  - `is_boundary`
-- All requested feature columns are present
-- The run represents one of the following scenario types:
-  - `engine_failure`
-  - `aileron_failure`
-  - `rudder_failure`
-  - `elevator_failure`
-  - `multi_fault` (e.g., combined aileron + rudder failures)
-  - `no_failure`
-
-### Exclusion criteria
-
-A run is excluded if **any** of the following hold:
-
-- The scenario has **no ground-truth failure boundary** (e.g., `no_ground_truth`)
-- Required columns are missing
-- The generated stream is malformed or empty
-
-Excluded runs are logged explicitly for transparency.
-
-### Failure-type classification
-
-Failure type is inferred directly from the source folder name used to generate each stream.  
-Multi-fault scenarios are treated as a distinct category rather than being excluded.
+Failure type is inferred directly from the source folder name (e.g., `engine_failure`, `rudder_failure`, `multi_fault`), allowing the sweep to scale without additional metadata.
 
 Examples:
 - `carbonZ_..._engine_failure` → `engine_failure`
@@ -175,16 +157,7 @@ This table is used both for quantitative reporting and for selecting representat
 
 **Output file:** `results/uav_sweep/per_run.csv`
 
-## Key figures
-
-### Figure 1 — ALFA UAV benchmark summary (offline sweep)
-
-This figure summarizes performance across failure types, including:
-1) detection rate (spike vs sustained),
-2) spike detection latency distribution,
-3) the tradeoff between false alarms and post-boundary persistence.
-
-![](../../results/uav_sweep/figure1_summary.png)
+## Quantitative results
 
 ### Aggregated results by failure type
 
