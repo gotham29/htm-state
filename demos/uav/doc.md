@@ -19,7 +19,7 @@ After the offline sweep, a small number of representative runs are selected for 
 
 ### What a live run looks like
 
-![Live HTM-State response during UAV engine failure](generated/figures/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png)
+![Live HTM-State response during UAV engine failure](generated/figures/selected/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png)
 
 *Top: normalized flight signals. Bottom: HTM-State with spike and sustained detections relative to the injected failure boundary.*
 
