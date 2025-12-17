@@ -37,11 +37,7 @@ class TruthLagOverlay:
 
     def _clear(self) -> None:
         for ln in self._truth_artists + self._lag_artists:
-            try:
-                ln.remove()
-            except Exception:
-                # If the artist is already removed or not in the figure, ignore.
-                pass
+            ln.remove()
         self._truth_artists = []
         self._lag_artists = []
 

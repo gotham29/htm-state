@@ -65,3 +65,42 @@ def detection_lag_seconds(
 
     lag_seconds = lag_steps / rate_hz
     return lag_steps, lag_seconds
+
+
+def detection_lag_steps_from_events(
+    event_steps: Iterable[int],
+    toggle_step: int,
+) -> Optional[int]:
+    """
+    Compute detection lag in *steps* given a list of event step indices
+    (e.g., [12, 44, 90]) and a ground-truth toggle step.
+
+    Returns first_event_step - toggle_step, or None if no event at/after toggle_step.
+    """
+    if toggle_step < 0:
+        raise ValueError("toggle_step must be >= 0")
+
+    first_event: Optional[int] = None
+    for s in event_steps:
+        if s >= toggle_step:
+            first_event = int(s)
+            break
+
+    if first_event is None:
+        return None
+
+    return first_event - toggle_step
+
+
+def detection_lag_seconds_from_events(
+    event_steps: Iterable[int],
+    toggle_step: int,
+    rate_hz: float,
+) -> Tuple[Optional[int], Optional[float]]:
+    """Wrapper returning (lag_steps, lag_seconds) for event step indices."""
+    if rate_hz <= 0:
+        raise ValueError("rate_hz must be positive.")
+    lag_steps = detection_lag_steps_from_events(event_steps, toggle_step)
+    if lag_steps is None:
+        return None, None
+    return lag_steps, lag_steps / rate_hz

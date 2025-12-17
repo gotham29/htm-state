@@ -228,6 +228,9 @@ def main() -> None:
     persist_steps: List[int] = []
     frozen_step: Optional[int] = None
 
+    # Keep a handle so we can update/refresh the summary cleanly.
+    metrics_text_artist = None
+
     for i, row in df.iterrows():
         t = float(row["t_sec"])
         feats = {name: float(row[name]) for name in feature_names}
@@ -359,10 +362,82 @@ def main() -> None:
         ax1.set_ylabel("state")
         ax1.legend(loc="upper left")
 
+        # ---- metrics summary (rendered on-plot) ----
+        # Build concise lines that domain viewers can read at a glance.
+        if boundary_time is None:
+            summary_lines = [
+                "Metrics summary",
+                "boundary: None",
+                "first sustained: None",
+                "lag: None",
+            ]
+        else:
+            summary_lines = [
+                "Metrics summary",
+                f"boundary: {boundary_time:.1f}s",
+                (
+                    f"first sustained: {first_sustained_time:.1f}s"
+                    if first_sustained_time is not None
+                    else "first sustained: None"
+                ),
+                (
+                    f"lag: {detection_lag_sec:.1f}s"
+                    if detection_lag_sec is not None
+                    else "lag: None"
+                ),
+            ]
+
+        # Remove previous artist (no try/except; this should always be valid if present)
+        if metrics_text_artist is not None:
+            metrics_text_artist.remove()
+
+        metrics_text_artist = ax1.text(
+            0.99, 0.02,
+            "\n".join(summary_lines),
+            transform=ax1.transAxes,
+            ha="right", va="bottom",
+            fontsize=9,
+            bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.85, linewidth=0.5),
+        )
+
         fig.canvas.draw()
         fig.canvas.flush_events()
 
         time.sleep(args.sleep)
+
+    # Ensure summary exists on final frame even if loop never drew (edge cases).
+    if metrics_text_artist is None:
+        if boundary_time is None:
+            summary_lines = [
+                "Metrics summary",
+                "boundary: None",
+                "first sustained: None",
+                "lag: None",
+            ]
+        else:
+            summary_lines = [
+                "Metrics summary",
+                f"boundary: {boundary_time:.1f}s",
+                (
+                    f"first sustained: {first_sustained_time:.1f}s"
+                    if first_sustained_time is not None
+                    else "first sustained: None"
+                ),
+                (
+                    f"lag: {detection_lag_sec:.1f}s"
+                    if detection_lag_sec is not None
+                    else "lag: None"
+                ),
+            ]
+        metrics_text_artist = ax1.text(
+            0.99, 0.02,
+            "\n".join(summary_lines),
+            transform=ax1.transAxes,
+            ha="right", va="bottom",
+            fontsize=9,
+            bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.85, linewidth=0.5),
+        )
+        fig.canvas.draw()
 
     # Save final frame on normal exit (no try/except).
     save_final_figure(fig, save_path, dpi=int(args.save_fig_dpi))
