@@ -19,7 +19,7 @@ This demo uses flight logs from the **ALFA UAV dataset**, after preprocessing an
 All evaluation is performed on generated per-run CSV streams located under:
 
 ```
-demos/uav_demo/generated/
+demos/uav/generated/
 ```
 
 Each CSV corresponds to a single UAV flight and contains:
@@ -225,7 +225,7 @@ Figures are written under:
 ### How to regenerate the gallery
 
 ```bash
-python scripts/run_live_demo_uav_selected.py \
+python scripts/run_live_uav.py \
   --per-run results/uav_sweep/per_run.csv \
   --coverage results/uav_sweep/coverage.csv \
   --outdir results/uav_sweep/figures/selected
@@ -349,7 +349,7 @@ python scripts/run_live_demo_uav_selected.py \
 The offline sweep provides the *quantitative* result (Figure 1 + CSV tables).  
 To make the behavior intuitive, we also publish a small set of **representative live plots** selected deterministically and tracked in:
 
-- `demos/uav_demo/selected_runs.yaml`
+- `demos/uav/selected_runs.yaml`
 
 These plots are meant to answer: *what does HTM-State actually “look like” over time on a real run?*
 
@@ -358,15 +358,15 @@ These plots are meant to answer: *what does HTM-State actually “look like” o
 1) Ensure the per-run CSV exists:
 
     python scripts/run_offline_uav_all.py \
-      --generated-dir demos/uav_demo/generated \
+      --generated-dir demos/uav/generated \
       --outdir results/uav_sweep
 
 2) Generate the gallery plots for the selected runs:
 
-    python scripts/run_live_demo_uav_selected.py \
+    python scripts/run_live_uav.py \
       --per-run results/uav_sweep/per_run.csv \
-      --selected demos/uav_demo/selected_runs.yaml \
-      --generated-dir demos/uav_demo/generated \
+      --selected demos/uav/selected_runs.yaml \
+      --generated-dir demos/uav/generated \
       --outdir results/uav_sweep/figures/selected
 
 ### Gallery
@@ -478,19 +478,19 @@ Run from the repo root:
 Raw scenarios are copied under:
 
 ```
-demos/uav_demo/raw/
+demos/uav/raw/
 ```
 
 ### 2. Generate per-run UAV stream CSVs
 
     python scripts/generate_uav_stream.py \
-      --in demos/uav_demo/raw \
-      --out demos/uav_demo/generated
+      --in demos/uav/raw \
+      --out demos/uav/generated
 
 ### 3. Run the offline sweep
 
     python scripts/run_offline_uav_all.py \
-      --generated-dir demos/uav_demo/generated \
+      --generated-dir demos/uav/generated \
       --outdir results/uav_sweep
 
 This produces:
@@ -500,7 +500,7 @@ This produces:
 
 ### 4. Generate live visualizations (optional)
 
-    python scripts/run_live_demo_uav_selected.py \
+    python scripts/run_live_uav.py \
       --per-run results/uav_sweep/per_run.csv \
       --outdir results/uav_sweep/figures
 
