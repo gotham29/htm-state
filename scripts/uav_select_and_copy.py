@@ -129,6 +129,9 @@ def copy_needed_files(src_dir: Path, dst_dir: Path, include_optional: bool):
     wanted_patterns = [
         "*mavros-vfr_hud*.csv",
         "*failure_status*.csv",
+        "*failure-status*.csv",
+        "*failureStatus*.csv",
+        "*FailureStatus*.csv",
     ]
     if include_optional:
         wanted_patterns += [

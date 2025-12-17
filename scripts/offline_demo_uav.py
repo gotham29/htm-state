@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Allow running as: python scripts/offline_demo_uav.py
+# by ensuring repo root is on sys.path for `import htm_state.*`
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 import argparse
 import csv
-from pathlib import Path
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -27,6 +35,12 @@ def parse_args() -> argparse.Namespace:
         default=10.0,
         help="Sample rate used when generating the stream (default: 10 Hz).",
     )
+    p.add_argument(
+        "--strict-boundary",
+        action="store_true",
+        help="If set, exclude runs that do not have a ground-truth boundary (is_boundary==1).",
+    )
+    p.set_defaults(strict_boundary=True)
     p.add_argument(
         "--ema-alpha",
         type=float,
@@ -169,6 +183,12 @@ def evaluate_uav_csv(csv_path: Path, args: argparse.Namespace) -> Dict[str, obje
     if boundary_idxs:
         boundary_step = int(boundary_idxs[0])
         boundary_time = float(df.loc[boundary_step, "t_sec"])
+    # Strict benchmark policy: if no boundary, exclude.
+    if args.strict_boundary and boundary_step is None:
+        return {
+            "included": False,
+            "exclude_reason": "no_boundary_strict",
+        }
 
     # Build feature ranges from this CSV
     feature_ranges: Dict[str, Dict[str, float]] = {}
@@ -322,6 +342,25 @@ def main() -> None:
     csv_path = Path(args.csv)
     if not csv_path.exists():
         raise FileNotFoundError(f"CSV not found: {csv_path}")
+
+    # Programmatic evaluation (used by the sweep script too)
+    res = evaluate_uav_csv(csv_path, args)
+    if not res.get("included", False):
+        print(f"CSV: {csv_path}")
+        print(f"EXCLUDED: {res.get('exclude_reason', '')}")
+        return
+
+    print(f"CSV: {csv_path}")
+    print(f"=== Results (summary) ===")
+    print(f"Boundary t_sec: {res.get('boundary_time_s')}")
+    print(f"Spike detected: {res.get('spike_detected')}  lag_s={res.get('spike_lag_s')}")
+    print(f"Sustained detected: {res.get('sustained_detected')}  lag_s={res.get('sustained_lag_s')}")
+    print(f"False alarms spm: {res.get('false_alarms_spm')}")
+    print(f"Post elev frac: {res.get('post_elev_frac')}")
+    print(f"Total spikes: {res.get('n_spikes_total')}")
+
+    # Continue into the existing verbose reporting path (feature report, trace writing, etc.)
+    # (No further changes below this line.)
 
     df = pd.read_csv(csv_path)
 

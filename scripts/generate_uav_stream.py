@@ -40,7 +40,10 @@ def infer_scenario_from_dir(d: Path) -> dict:
     """
     spec = {"dir": d.name}
     # prefer ground-truth if present
-    if any(p.name.startswith("failure_status") for p in d.glob("*.csv")):
+    # NOTE: ALFA filenames are typically like:
+    #   carbonZ_...-failure_status-engines.csv
+    # not "failure_status*.csv" at the start.
+    if any("failure_status" in p.name.lower() for p in d.glob("*.csv")):
         spec["boundary"] = "failure_status"
     return spec
 
