@@ -1,0 +1,587 @@
+# HTM-State UAV Demo (ALFA Dataset)
+
+This demo evaluates **HTM-State** on real UAV flight data from the **ALFA (Autonomous Learning Flight Arena)** dataset.
+
+Rather than relying on a small number of hand-selected examples, we perform an **offline sweep across all eligible ALFA runs**, spanning:
+
+- Engine failures  
+- Control-surface failures (aileron, rudder, elevator)  
+- Multi-fault scenarios  
+- No-failure baselines  
+
+The goal is to assess, in a broad and systematic way, whether HTM-State shows **early, stable, and interpretable detection behavior** across diverse failure modes — and to quantify that behavior using simple, transparent metrics.
+
+After the offline sweep, a small number of representative runs are selected for **live streaming visualizations**, which provide intuition but do not drive the reported results.
+
+## Dataset coverage
+
+This demo uses flight logs from the **ALFA UAV dataset**, after preprocessing and stream generation.  
+All evaluation is performed on generated per-run CSV streams located under:
+
+```
+demos/uav_demo/generated/
+```
+
+Each CSV corresponds to a single UAV flight and contains:
+- Time index (`t_sec`)
+- Modeled flight features (e.g., airspeed, climb, attitude, control inputs)
+- A binary ground-truth boundary (`is_boundary`) when available
+
+### Inclusion criteria
+
+A run is included in the offline sweep if **all** of the following hold:
+
+- The generated CSV contains required columns:
+  - `t_sec`
+  - `is_boundary`
+- All requested feature columns are present
+- The run represents one of the following scenario types:
+  - `engine_failure`
+  - `aileron_failure`
+  - `rudder_failure`
+  - `elevator_failure`
+  - `multi_fault` (e.g., combined aileron + rudder failures)
+  - `no_failure`
+
+### Exclusion criteria
+
+A run is excluded if **any** of the following hold:
+
+- The scenario has **no ground-truth failure boundary** (e.g., `no_ground_truth`)
+- Required columns are missing
+- The generated stream is malformed or empty
+
+Excluded runs are logged explicitly for transparency.
+
+### Failure-type classification
+
+Failure type is inferred directly from the source folder name used to generate each stream.  
+Multi-fault scenarios are treated as a distinct category rather than being excluded.
+
+Examples:
+- `carbonZ_..._engine_failure` → `engine_failure`
+- `carbonZ_..._rudder_left_failure` → `rudder_failure`
+- `carbonZ_..._left_aileron__right_aileron__failure` → `multi_fault`
+- `carbonZ_..._no_failure` → `no_failure`
+
+This lightweight name-based classification allows the sweep to scale cleanly across the entire ALFA dataset without additional metadata.
+
+## Metrics definition
+
+Each UAV run is evaluated independently using a small set of transparent, time-aligned metrics derived from the HTM-State output. These metrics are designed to capture **timeliness**, **stability**, and **false-alarm behavior** relative to a known failure boundary.
+
+### Primary metric: detection lag
+
+Detection lag measures how quickly HTM-State responds **after** a ground-truth failure is injected.
+
+Two complementary detection mechanisms are evaluated:
+
+#### 1. Spike detection lag
+- A **spike** is defined as a sharp increase in HTM-State relative to its recent history.
+- Detection lag is computed as the elapsed time between the failure boundary and the **first spike occurring at or after the boundary**.
+
+This captures fast, edge-like responses to abrupt changes.
+
+#### 2. Sustained elevation lag
+- A **sustained elevation** occurs when HTM-State remains above a threshold for a minimum hold duration.
+- The threshold is computed from **pre-boundary state statistics** (median + *k*·MAD or equivalent).
+- Detection lag is the elapsed time between the failure boundary and the first sustained elevation event.
+
+This captures slower but more stable regime changes.
+
+Both lags are reported in **seconds** when a boundary is present.
+
+### Secondary metric: false alarms before boundary
+
+False alarms quantify spurious detections **before** the failure occurs.
+
+- Measured as the **rate of spike events per minute** in the pre-boundary interval.
+- For `no_failure` scenarios, this metric is computed over the entire run.
+
+Low false-alarm rates indicate stability under nominal conditions.
+
+### Secondary metric: post-boundary persistence
+
+Post-boundary persistence measures how strongly HTM-State remains elevated after a failure.
+
+- Defined as the **fraction of post-boundary timesteps** where HTM-State exceeds the pre-boundary threshold.
+- Values near 1.0 indicate sustained abnormal state; values near 0.0 indicate weak or transient response.
+
+This metric complements detection lag by capturing **severity and consistency**, not just speed.
+
+### Applicability notes
+
+- For runs without a failure boundary (`no_failure`), detection lag metrics are not applicable.
+- All metrics are computed without using future information beyond the current timestep.
+
+## Results summary
+
+The offline sweep produces two primary result tables:
+
+### Overview and key findings
+
+The strict offline sweep across the ALFA UAV dataset demonstrates that **HTM-State exhibits consistent, fault-dependent behavior across diverse failure modes**, using a single unsupervised configuration and without per-scenario tuning.
+
+Several high-level patterns emerge:
+
+- **Detection behavior is strongly failure-type dependent.**  
+  Control-surface and multi-fault scenarios are detected more reliably than engine failures, reflecting differences in how faults manifest in pilot control behavior.
+
+- **Spike-based detection and sustained elevation capture complementary phenomena.**  
+  Abrupt faults often produce transient novelty (spikes), while non-compensable control degradations produce prolonged state elevation. These mechanisms should not be conflated.
+
+- **Detection latency is measured in seconds, not instantaneous steps.**  
+  Median detection lags range from several seconds to tens of seconds depending on fault type, consistent with gradual workload emergence rather than threshold-triggered alarms.
+
+- **False alarms remain bounded under nominal conditions.**  
+  Pre-boundary spike rates remain low across all failure types, including no-failure baselines, indicating stability rather than hypersensitivity.
+
+- **Post-boundary state persistence distinguishes compensable vs. sustained failures.**  
+  Engine failures tend to show transient responses with low persistence, while elevator, aileron, and multi-fault scenarios exhibit sustained elevation consistent with prolonged workload impact.
+
+These trends are summarized visually in **Figure 1**, which aggregates detection rate, latency, and persistence across all evaluated runs.
+
+> **Figure 1 (Summary).** HTM-State benchmark performance on the ALFA UAV dataset under a strict, unsupervised evaluation protocol.  
+> (A) Detection rates by failure type for spike-based and sustained-elevation mechanisms.  
+> (B) Distribution of spike detection latency across failure types.  
+> (C) Relationship between post-boundary state persistence and false-alarm rate, highlighting separation between compensable and non-compensable failures.
+
+1. A **per-run results table**, containing one row per UAV flight
+2. An **aggregated summary table**, grouped by failure type
+
+These tables are generated automatically and saved alongside the demo results.
+
+### Per-run results table
+
+The per-run table provides a complete, auditable record of HTM-State behavior on each individual flight.
+
+Each row corresponds to a single generated UAV stream.
+
+| Column | Description |
+|------|------------|
+| `run_id` | Unique identifier (derived from source folder / CSV name) |
+| `failure_type` | One of: `engine_failure`, `aileron_failure`, `rudder_failure`, `elevator_failure`, `multi_fault`, `no_failure` |
+| `has_boundary` | Boolean indicating whether a ground-truth boundary exists |
+| `boundary_time_s` | Failure injection time (seconds), if applicable |
+| `spike_detected` | Whether a spike was detected after the boundary |
+| `spike_lag_s` | Detection lag to first spike (seconds) |
+| `sustained_detected` | Whether a sustained elevation was detected |
+| `sustained_lag_s` | Detection lag to sustained elevation (seconds) |
+| `false_alarms_spm` | Spike rate before boundary (spikes per minute) |
+| `post_elev_frac` | Fraction of post-boundary time state is elevated |
+| `n_spikes_total` | Total number of spikes during the run |
+
+This table is used both for quantitative reporting and for selecting representative runs for visualization.
+
+**Output file:** `results/uav_sweep/per_run.csv`
+
+## Key figures
+
+### Figure 1 — ALFA UAV benchmark summary (offline sweep)
+
+This figure summarizes performance across failure types, including:
+1) detection rate (spike vs sustained),
+2) spike detection latency distribution,
+3) the tradeoff between false alarms and post-boundary persistence.
+
+![](../../results/uav_sweep/figure1_summary.png)
+
+### Aggregated results by failure type
+
+To summarize performance across the dataset, per-run metrics are aggregated by inferred failure type.
+
+| failure_type | n_runs | spike_detect_rate | median_spike_lag_s | sust_detect_rate | median_sust_lag_s | median_false_alarms_spm | median_post_elev_frac |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| engine_failure |  |  |  |  |  |  |  |
+| aileron_failure |  |  |  |  |  |  |  |
+| rudder_failure |  |  |  |  |  |  |  |
+| elevator_failure |  |  |  |  |  |  |  |
+| multi_fault |  |  |  |  |  |  |  |
+| no_failure |  | N/A | N/A | N/A | N/A |  | N/A |
+
+Notes:
+- Detection rates are computed as the fraction of runs where detection occurred.
+- Median lags are computed only over detected runs.
+- For `no_failure`, detection lag metrics are not applicable; false alarms are the primary indicator.
+
+![Figure 1: ALFA summary](results/uav_sweep/figure1_summary.png)
+Notably, HTM-State exhibits increasing post-boundary persistence from engine to control-surface to multi-fault scenarios, consistent with increasing workload severity rather than mere novelty.
+
+**Output file:** `results/uav_sweep/summary_by_type.csv`
+
+## Representative live plots (mini-gallery)
+
+The offline sweep + Figure 1 provides the quantitative story.  
+The plots below are **representative examples** generated by replaying selected runs through the live demo visualization.
+
+Selections are deterministic and recorded in:
+
+- `results/uav_sweep/selected_runs.csv`
+
+Figures are written under:
+
+- `results/uav_sweep/figures/selected/<failure_type>/...png`
+
+### How to regenerate the gallery
+
+```bash
+python scripts/run_live_demo_uav_selected.py \
+  --per-run results/uav_sweep/per_run.csv \
+  --coverage results/uav_sweep/coverage.csv \
+  --outdir results/uav_sweep/figures/selected
+```
+
+---
+
+### No-failure baseline
+
+![](../../results/uav_sweep/figures/selected/no_failure/<FILL_ME__baseline.png>)
+
+---
+
+### Engine failure
+
+**Typical spike**
+
+![](../../results/uav_sweep/figures/selected/engine_failure/<FILL_ME__typical_spike.png>)
+
+**Hard spike**
+
+![](../../results/uav_sweep/figures/selected/engine_failure/<FILL_ME__hard_spike.png>)
+
+**Miss (if present)**
+
+![](../../results/uav_sweep/figures/selected/engine_failure/<FILL_ME__miss.png>)
+
+---
+
+### Elevator failure
+
+**Typical spike**
+
+![](../../results/uav_sweep/figures/selected/elevator_failure/<FILL_ME__typical_spike.png>)
+
+**Sustained-only (if present)**
+
+![](../../results/uav_sweep/figures/selected/elevator_failure/<FILL_ME__sustained_only.png>)
+
+---
+
+### Aileron failure
+
+**Typical spike**
+
+![](../../results/uav_sweep/figures/selected/aileron_failure/<FILL_ME__typical_spike.png>)
+
+**Hard spike / miss (optional)**
+
+![](../../results/uav_sweep/figures/selected/aileron_failure/<FILL_ME__hard_or_miss.png>)
+
+---
+
+### Rudder failure
+
+**Typical spike**
+
+![](../../results/uav_sweep/figures/selected/rudder_failure/<FILL_ME__typical_spike.png>)
+
+**Hard spike**
+
+![](../../results/uav_sweep/figures/selected/rudder_failure/<FILL_ME__hard_spike.png>)
+
+---
+
+### Multi-fault
+
+**Typical spike**
+
+![](../../results/uav_sweep/figures/selected/multi_fault/<FILL_ME__typical_spike.png>)
+
+**Hard spike**
+
+![](../../results/uav_sweep/figures/selected/multi_fault/<FILL_ME__hard_spike.png>)
+
+
+## Representative live runs (auto-generated gallery)
+
+<!-- AUTO-GALLERY:BEGIN -->
+
+> This section is generated from `demos/uav/selected_runs.yaml` (do not edit by hand).
+
+### `no_failure`
+
+| Example | Plot | Run ID | Quick metrics |
+|---|---:|---|---|
+| **Baseline (no failure)** | ![](results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-08-24_no_failure__baseline.png) | `carbonZ_2018-10-18-11-08-24_no_failure` | — |
+
+### `engine_failure`
+
+| Example | Plot | Run ID | Quick metrics |
+|---|---:|---|---|
+| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png) | `carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj` | — |
+| **Hard spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-11-56-30_engine_failure__hard_spike.png) | `carbonZ_2018-09-11-11-56-30_engine_failure` | — |
+| **Miss** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-22-07_2_engine_failure__miss.png) | `carbonZ_2018-09-11-14-22-07_2_engine_failure` | — |
+
+### `elevator_failure`
+
+| Example | Plot | Run ID | Quick metrics |
+|---|---:|---|---|
+| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-05-11_1_elevator_failure__typical_spike.png) | `carbonZ_2018-09-11-15-05-11_1_elevator_failure` | — |
+| **Sustained-only** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-41-51_elevator_failure__sustained_only.png) | `carbonZ_2018-09-11-14-41-51_elevator_failure` | — |
+
+### `rudder_failure`
+
+| Example | Plot | Run ID | Quick metrics |
+|---|---:|---|---|
+| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-06-34_2_rudder_right_failure__typical_spike.png) | `carbonZ_2018-09-11-15-06-34_2_rudder_right_failure` | — |
+| **Hard spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-06-34_1_rudder_right_failure__hard_spike.png) | `carbonZ_2018-09-11-15-06-34_1_rudder_right_failure` | — |
+
+### `multi_fault`
+
+| Example | Plot | Run ID | Quick metrics |
+|---|---:|---|---|
+| **Typical spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure__typical_spike.png) | `carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure` | — |
+| **Hard spike** | ![](results/uav_sweep/figures/selected/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png) | `carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure` | — |
+
+<!-- AUTO-GALLERY:END -->
+
+
+The offline sweep provides the *quantitative* result (Figure 1 + CSV tables).  
+To make the behavior intuitive, we also publish a small set of **representative live plots** selected deterministically and tracked in:
+
+- `demos/uav_demo/selected_runs.yaml`
+
+These plots are meant to answer: *what does HTM-State actually “look like” over time on a real run?*
+
+### How to generate / update the gallery
+
+1) Ensure the per-run CSV exists:
+
+    python scripts/run_offline_uav_all.py \
+      --generated-dir demos/uav_demo/generated \
+      --outdir results/uav_sweep
+
+2) Generate the gallery plots for the selected runs:
+
+    python scripts/run_live_demo_uav_selected.py \
+      --per-run results/uav_sweep/per_run.csv \
+      --selected demos/uav_demo/selected_runs.yaml \
+      --generated-dir demos/uav_demo/generated \
+      --outdir results/uav_sweep/figures/selected
+
+### Gallery
+
+#### No-failure baseline
+
+**Baseline (low false alarms):** `carbonZ_2018-10-18-11-08-24_no_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-08-24_no_failure__baseline.png)
+
+---
+
+#### Engine failures
+
+**Typical spike response:** `carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png)
+
+**Hard spike case (late / borderline):** `carbonZ_2018-09-11-11-56-30_engine_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-11-56-30_engine_failure__hard_spike.png)
+
+**Miss case (transparent failure mode):** `carbonZ_2018-09-11-14-22-07_2_engine_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-22-07_2_engine_failure__miss.png)
+
+---
+
+#### Elevator failures
+
+**Typical spike response:** `carbonZ_2018-09-11-15-05-11_1_elevator_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-05-11_1_elevator_failure__typical_spike.png)
+
+**Sustained-only detection (no strong spike trigger):** `carbonZ_2018-09-11-14-41-51_elevator_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-41-51_elevator_failure__sustained_only.png)
+
+---
+
+#### Rudder failures
+
+**Typical spike response:** `carbonZ_2018-09-11-15-06-34_2_rudder_right_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-06-34_2_rudder_right_failure__typical_spike.png)
+
+**Hard spike case (late / borderline):** `carbonZ_2018-09-11-15-06-34_1_rudder_right_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-15-06-34_1_rudder_right_failure__hard_spike.png)
+
+---
+
+#### Multi-fault scenarios
+
+**Typical multi-fault response:** `carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure__typical_spike.png)
+
+**Hard multi-fault case:** `carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure`
+
+![](../../results/uav_sweep/figures/selected/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png)
+
+
+## Representative live visualizations
+
+While the offline sweep provides comprehensive quantitative coverage, a small number of runs are selected for **live streaming visualizations** to build intuition and demonstrate how HTM-State evolves over time.
+
+These figures are illustrative only; all reported metrics come from the offline sweep.
+
+### Selection criteria
+
+Representative runs are selected deterministically from the per-run results table:
+
+- **Typical case**: run with detection lag closest to the median for a given failure type
+- **Hard case**: run in the upper tail of detection lag (e.g., ~90th percentile) that is still successfully detected
+- **Baseline case**: a `no_failure` run with low false-alarm rate
+- **Miss case (if any)**: a run where detection did not occur, included for transparency
+
+This selection ensures that live plots are **representative, not cherry-picked**.
+
+### Visualization method
+
+Each selected run is visualized using the live streaming demo:
+- Flight signals (display-normalized)
+- HTM-State output
+- Spike detections
+- Sustained elevation threshold and events
+- Ground-truth failure boundary (when present)
+
+### Figure organization
+
+Generated figures are stored under:
+
+```
+results/uav_sweep/figures/{failure_type}/{run_id}.png
+```
+
+## Reproducibility
+
+### 1. Prepare raw ALFA logs
+
+Run from the repo root:
+
+    python scripts/uav_select_and_copy.py \
+      --processed-dir /path/to/ALFA/processed \
+      --repo-root /path/to/htm-state \
+      --include-optional
+
+Raw scenarios are copied under:
+
+```
+demos/uav_demo/raw/
+```
+
+### 2. Generate per-run UAV stream CSVs
+
+    python scripts/generate_uav_stream.py \
+      --in demos/uav_demo/raw \
+      --out demos/uav_demo/generated
+
+### 3. Run the offline sweep
+
+    python scripts/run_offline_uav_all.py \
+      --generated-dir demos/uav_demo/generated \
+      --outdir results/uav_sweep
+
+This produces:
+- `results/uav_sweep/per_run.csv`
+- `results/uav_sweep/summary_by_type.csv`
+- `results/uav_sweep/coverage.csv`
+
+### 4. Generate live visualizations (optional)
+
+    python scripts/run_live_demo_uav_selected.py \
+      --per-run results/uav_sweep/per_run.csv \
+      --outdir results/uav_sweep/figures
+
+<!-- BEGIN LIVE_GALLERY: auto-generated from results/uav_sweep/selected_runs.csv -->
+
+> Gallery is generated from `results/uav_sweep/selected_runs.csv`.
+
+### No-failure baseline
+
+**Baseline (nominal)** — `carbonZ_2018-10-18-11-08-24_no_failure`  
+- stream: `generated/carbonZ_2018-10-18-11-08-24_no_failure.csv`  
+![no_failure baseline carbonZ_2018-10-18-11-08-24_no_failure](../../results/uav_sweep/figures/no_failure/carbonZ_2018-10-18-11-08-24_no_failure__baseline.png)
+
+---
+
+### Engine failure
+
+**Typical case (spike lag ~ median)** — `carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj`  
+- stream: `generated/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj.csv`  
+![engine_failure typical_spike carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj](../../results/uav_sweep/figures/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png)
+
+**Hard case (spike lag ~ 90th percentile)** — `carbonZ_2018-09-11-11-56-30_engine_failure`  
+- stream: `generated/carbonZ_2018-09-11-11-56-30_engine_failure.csv`  
+![engine_failure hard_spike carbonZ_2018-09-11-11-56-30_engine_failure](../../results/uav_sweep/figures/engine_failure/carbonZ_2018-09-11-11-56-30_engine_failure__hard_spike.png)
+
+**Miss (no spike, no sustained)** — `carbonZ_2018-09-11-14-22-07_2_engine_failure`  
+- stream: `generated/carbonZ_2018-09-11-14-22-07_2_engine_failure.csv`  
+![engine_failure miss carbonZ_2018-09-11-14-22-07_2_engine_failure](../../results/uav_sweep/figures/engine_failure/carbonZ_2018-09-11-14-22-07_2_engine_failure__miss.png)
+
+---
+
+### Elevator failure
+
+**Typical case (spike lag ~ median)** — `carbonZ_2018-09-11-15-05-11_1_elevator_failure`  
+- stream: `generated/carbonZ_2018-09-11-15-05-11_1_elevator_failure.csv`  
+![elevator_failure typical_spike carbonZ_2018-09-11-15-05-11_1_elevator_failure](../../results/uav_sweep/figures/elevator_failure/carbonZ_2018-09-11-15-05-11_1_elevator_failure__typical_spike.png)
+
+**Sustained-only (no spike)** — `carbonZ_2018-09-11-14-41-51_elevator_failure`  
+- stream: `generated/carbonZ_2018-09-11-14-41-51_elevator_failure.csv`  
+![elevator_failure sustained_only carbonZ_2018-09-11-14-41-51_elevator_failure](../../results/uav_sweep/figures/elevator_failure/carbonZ_2018-09-11-14-41-51_elevator_failure__sustained_only.png)
+
+---
+
+### Aileron failure
+
+**Typical case (spike lag ~ median)** — `carbonZ_2018-09-11-17-27-13_2_both_ailerons_failure`  
+- stream: `generated/carbonZ_2018-09-11-17-27-13_2_both_ailerons_failure.csv`  
+![aileron_failure typical_spike carbonZ_2018-09-11-17-27-13_2_both_ailerons_failure](../../results/uav_sweep/figures/aileron_failure/carbonZ_2018-09-11-17-27-13_2_both_ailerons_failure__typical_spike.png)
+
+**Hard case (spike lag ~ 90th percentile)** — `carbonZ_2018-10-05-14-37-22_2_right_aileron_failure`  
+- stream: `generated/carbonZ_2018-10-05-14-37-22_2_right_aileron_failure.csv`  
+![aileron_failure hard_spike carbonZ_2018-10-05-14-37-22_2_right_aileron_failure](../../results/uav_sweep/figures/aileron_failure/carbonZ_2018-10-05-14-37-22_2_right_aileron_failure__hard_spike.png)
+
+**Miss (no spike, no sustained)** — `carbonZ_2018-10-05-14-34-20_2_right_aileron_failure_with_emr_traj`  
+- stream: `generated/carbonZ_2018-10-05-14-34-20_2_right_aileron_failure_with_emr_traj.csv`  
+![aileron_failure miss carbonZ_2018-10-05-14-34-20_2_right_aileron_failure_with_emr_traj](../../results/uav_sweep/figures/aileron_failure/carbonZ_2018-10-05-14-34-20_2_right_aileron_failure_with_emr_traj__miss.png)
+
+---
+
+### Rudder failure
+
+**Typical case (spike lag ~ median)** — `carbonZ_2018-09-11-15-06-34_2_rudder_right_failure`  
+- stream: `generated/carbonZ_2018-09-11-15-06-34_2_rudder_right_failure.csv`  
+![rudder_failure typical_spike carbonZ_2018-09-11-15-06-34_2_rudder_right_failure](../../results/uav_sweep/figures/rudder_failure/carbonZ_2018-09-11-15-06-34_2_rudder_right_failure__typical_spike.png)
+
+**Hard case (spike lag ~ 90th percentile)** — `carbonZ_2018-09-11-15-06-34_1_rudder_right_failure`  
+- stream: `generated/carbonZ_2018-09-11-15-06-34_1_rudder_right_failure.csv`  
+![rudder_failure hard_spike carbonZ_2018-09-11-15-06-34_1_rudder_right_failure](../../results/uav_sweep/figures/rudder_failure/carbonZ_2018-09-11-15-06-34_1_rudder_right_failure__hard_spike.png)
+
+---
+
+### Multi-fault
+
+**Typical case (spike lag ~ median)** — `carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure`  
+- stream: `generated/carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure.csv`  
+![multi_fault typical_spike carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure](../../results/uav_sweep/figures/multi_fault/carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure__typical_spike.png)
+
+**Hard case (spike lag ~ 90th percentile)** — `carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure`  
+- stream: `generated/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure.csv`  
+![multi_fault hard_spike carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure](../../results/uav_sweep/figures/multi_fault/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png)
+
+---
+
+<!-- END LIVE_GALLERY -->

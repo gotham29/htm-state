@@ -1,0 +1,59 @@
+# Representative run selection for the ALFA UAV demo.
+# These plots are *illustrative* (for intuition), while all quantitative reporting
+# comes from the offline sweep tables under results/uav_sweep/.
+#
+# Conventions:
+# - tags:
+#     typical_spike: spike lag closest to median among detected runs (per class)
+#     hard_spike: upper-tail lag among detected runs (per class)
+#     sustained_only: detected by sustained thresholding but not by spike trigger
+#     miss: included failure run where detection did not occur (transparent failure mode)
+#     baseline: nominal run (no_failure) with low false alarms
+#
+# Expected figure output location (recommended):
+#   results/uav_sweep/figures/selected/<filename>.png
+#
+version: 1
+
+fig_dir: results/uav_sweep/figures/selected
+
+selected:
+  no_failure:
+    - run_id: carbonZ_2018-10-18-11-08-24_no_failure
+      tag: baseline
+      figure: carbonZ_2018-10-18-11-08-24_no_failure__baseline.png
+
+  engine_failure:
+    - run_id: carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj
+      tag: typical_spike
+      figure: carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png
+    - run_id: carbonZ_2018-09-11-11-56-30_engine_failure
+      tag: hard_spike
+      figure: carbonZ_2018-09-11-11-56-30_engine_failure__hard_spike.png
+    - run_id: carbonZ_2018-09-11-14-22-07_2_engine_failure
+      tag: miss
+      figure: carbonZ_2018-09-11-14-22-07_2_engine_failure__miss.png
+
+  elevator_failure:
+    - run_id: carbonZ_2018-09-11-15-05-11_1_elevator_failure
+      tag: typical_spike
+      figure: carbonZ_2018-09-11-15-05-11_1_elevator_failure__typical_spike.png
+    - run_id: carbonZ_2018-09-11-14-41-51_elevator_failure
+      tag: sustained_only
+      figure: carbonZ_2018-09-11-14-41-51_elevator_failure__sustained_only.png
+
+  rudder_failure:
+    - run_id: carbonZ_2018-09-11-15-06-34_2_rudder_right_failure
+      tag: typical_spike
+      figure: carbonZ_2018-09-11-15-06-34_2_rudder_right_failure__typical_spike.png
+    - run_id: carbonZ_2018-09-11-15-06-34_1_rudder_right_failure
+      tag: hard_spike
+      figure: carbonZ_2018-09-11-15-06-34_1_rudder_right_failure__hard_spike.png
+
+  multi_fault:
+    - run_id: carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure
+      tag: typical_spike
+      figure: carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure__typical_spike.png
+    - run_id: carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure
+      tag: hard_spike
+      figure: carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png

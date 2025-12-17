@@ -153,6 +153,14 @@ def main() -> None:
     axA.set_xticklabels(plot_order, rotation=25, ha="right")
     axA.legend(loc="upper right", frameon=True)
 
+    # Slightly mute the no_failure category (grey label + faint band)
+    if "no_failure" in plot_order:
+        i0 = plot_order.index("no_failure")
+        axA.axvspan(i0 - 0.5, i0 + 0.5, color="0.9", alpha=0.35, zorder=0)
+        ticklabels = axA.get_xticklabels()
+        if 0 <= i0 < len(ticklabels):
+            ticklabels[i0].set_color("0.55")
+
     # Annotate n_runs above each category
     for i, ft in enumerate(plot_order):
         n = _safe_float(n_runs.loc[ft])
@@ -193,6 +201,35 @@ def main() -> None:
         if np.isnan(x0) or np.isnan(y0):
             continue
         axC.text(x0, y0, f"  {ft}", va="center", fontsize=10)
+
+    # Add simple interpretive arrows: "Compensable" -> engine, "Non-compensable" -> multi-fault
+    coords = {}
+    for ft, x0, y0 in zip(fa_sc.index.tolist(), fa_sc.values, post_sc.values):
+        if np.isnan(x0) or np.isnan(y0):
+            continue
+        coords[ft] = (float(x0), float(y0))
+
+    if "engine_failure" in coords:
+        ex, ey = coords["engine_failure"]
+        axC.annotate(
+            "Compensable",
+            xy=(ex, ey),
+            xytext=(ex - 0.35, ey + 0.07),
+            arrowprops=dict(arrowstyle="->", linewidth=1),
+            fontsize=11,
+            ha="right",
+        )
+
+    if "multi_fault" in coords:
+        mx, my = coords["multi_fault"]
+        axC.annotate(
+            "Non-compensable",
+            xy=(mx, my),
+            xytext=(mx + 0.25, my + 0.06),
+            arrowprops=dict(arrowstyle="->", linewidth=1),
+            fontsize=11,
+            ha="left",
+        )
 
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(out_path, dpi=200)
