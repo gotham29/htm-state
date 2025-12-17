@@ -139,12 +139,34 @@ to explore different sensitivities, detection latencies, and response profiles.
 
 ## ✈️ Demo 1 — UAV Failure Detection (ALFA UAV)
 
-HTM-State detects **failure onset** in streaming UAV telemetry by continuously learning
-normal dynamics online, then surfacing both spikes (fast transitions) and
-**sustained elevation** (persistent abnormal state) without supervised labels.
+This demo evaluates **HTM-State on real UAV flight data** from the
+**ALFA (Autonomous Learning Flight Arena)** dataset.
 
-👉 **Full demo (offline + live + details):**  
-[`docs/demos/uav_demo.md`](docs/demos/uav_demo.md)
+HTM-State continuously learns normal flight dynamics online from multivariate
+telemetry (airspeed, climb rate, altitude, control behavior), then detects
+**failure onset and regime change** without supervision or retraining.
+
+### What this demo shows
+
+- **Unsupervised online learning** on nonstationary UAV telemetry  
+- **Fast spike-based detection** of abrupt failures  
+- **Sustained state elevation** for persistent or non-compensable faults  
+- **Quantified detection latency**, not just anomaly scores  
+- **Systematic evaluation across all ALFA runs**, not cherry-picked cases
+
+### Evaluation approach
+
+- An **offline sweep** across all eligible ALFA failure scenarios
+  (engine, control-surface, multi-fault, and no-failure baselines)
+- Transparent metrics:
+  - detection rate
+  - detection lag (seconds)
+  - false alarms before failure
+  - post-failure persistence
+- A small number of **representative live visualizations** for intuition only
+
+👉 **Full UAV demo (offline results, figures, live plots):**  
+[`demos/uav/doc.md`](demos/uav/doc.md)
 
 ---
 
