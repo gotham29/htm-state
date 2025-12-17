@@ -215,3 +215,12 @@ __marimo__/
 # python
 __pycache__/
 *.pyc
+
+# Demo data / generated artifacts (avoid committing ALFA-derived files)
+demos/uav_demo/raw/
+demos/uav_demo/generated/
+results/uav_sweep/
+
+# Optional: ignore any other demo outputs
+results/
+

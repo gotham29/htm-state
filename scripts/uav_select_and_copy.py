@@ -1,5 +1,4 @@
 import argparse
-import os
 import re
 import shutil
 from pathlib import Path
@@ -15,16 +14,23 @@ def classify_failure(name: str) -> str:
     if "no_ground_truth" in n:
         return "no_ground_truth"
 
-    # common failures in your list
-    if "engine_failure" in n:
+    has_engine = "engine_failure" in n
+    has_elevator = "elevator_failure" in n
+    has_rudder = ("rudder" in n and "failure" in n)
+    has_aileron = ("aileron" in n and "failure" in n)
+
+    # multi-fault if >1 fault family appears (or explicit double-underscore pattern)
+    families = sum([has_engine, has_elevator, has_rudder, has_aileron])
+    if families >= 2 or "__" in n:
+        return "multi_fault"
+
+    if has_engine:
         return "engine_failure"
-    if "elevator_failure" in n:
+    if has_elevator:
         return "elevator_failure"
-    if "rudder" in n:
-        # rudder_right_failure / rudder_left_failure / rudder_zero__...
+    if has_rudder:
         return "rudder_failure"
-    if "aileron" in n:
-        # left_aileron_failure / both_ailerons_failure / left_aileron__right_aileron__failure
+    if has_aileron:
         return "aileron_failure"
 
     # fallback: everything after last timestamp chunk
@@ -35,6 +41,15 @@ def classify_failure(name: str) -> str:
 
     return "unknown"
 
+def is_eligible_failure_type(ftype: str) -> bool:
+    return ftype in {
+        "no_failure",
+        "engine_failure",
+        "elevator_failure",
+        "rudder_failure",
+        "aileron_failure",
+        "multi_fault",
+    }
 
 def score_scenario(dirpath: Path) -> int:
     """
@@ -66,6 +81,24 @@ def score_scenario(dirpath: Path) -> int:
 
     return score
 
+def pick_all_eligible(processed_dir: Path):
+    """
+    Returns: dict[folder_name] = failure_type for all eligible runs.
+    """
+    picks = {}
+    for d in processed_dir.iterdir():
+        if not d.is_dir():
+            continue
+        if "ds_store" in d.name.lower():
+            continue
+
+        ftype = classify_failure(d.name)
+        if ftype == "no_ground_truth":
+            continue
+        if not is_eligible_failure_type(ftype):
+            continue
+        picks[d.name] = ftype
+    return picks
 
 def pick_best_per_type(processed_dir: Path):
     """
@@ -127,6 +160,8 @@ def main():
     ap.add_argument("--processed-dir", required=True, help="Path to ALFA processed/ directory")
     ap.add_argument("--repo-root", required=True, help="Path to htm-state repo root")
     ap.add_argument("--include-optional", action="store_true", help="Also copy rc-out and imu-data if present")
+    ap.add_argument("--mode", choices=["all", "best"], default="all",
+                    help="all=copy all eligible runs (default); best=copy one best run per type")
     ap.add_argument("--print-only", action="store_true", help="Only print selections (no copying)")
     args = ap.parse_args()
 
@@ -136,18 +171,23 @@ def main():
     out_raw = repo_root / "demos" / "uav_demo" / "raw"
     out_raw.mkdir(parents=True, exist_ok=True)
 
-    picks = pick_best_per_type(processed_dir)
+    if args.mode == "best":
+        picks_best = pick_best_per_type(processed_dir)  # dict[ftype] = folder
+        folders = [(folder, ftype) for ftype, folder in picks_best.items()]
+    else:
+        picks_all = pick_all_eligible(processed_dir)     # dict[folder] = ftype
+        folders = [(folder, ftype) for folder, ftype in picks_all.items()]
 
     # You can force “must have vfr” by filtering here if you want.
     print("\nSelected scenarios:")
-    for ftype in sorted(picks.keys()):
-        print(f"  {ftype:15s} -> {picks[ftype]}")
+    for folder, ftype in sorted(folders, key=lambda x: (x[1], x[0])):
+        print(f"  {ftype:15s} -> {folder}")
 
     if args.print_only:
         return
 
     print("\nCopying files:")
-    for ftype, folder in sorted(picks.items()):
+    for folder, ftype in sorted(folders, key=lambda x: (x[1], x[0])):
         src = processed_dir / folder
         dst = out_raw / folder
         copied = copy_needed_files(src, dst, include_optional=args.include_optional)

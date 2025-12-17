@@ -139,6 +139,184 @@ def print_boundary_feature_report(
     for f, m0, m1, d, ps, z in rows:
         print(f"{f:20s} {m0:10.4f} {m1:11.4f} {d:10.4f} {ps:11.4f} {z:7.2f}")
 
+def evaluate_uav_csv(csv_path: Path, args: argparse.Namespace) -> Dict[str, object]:
+    """
+    Programmatic entrypoint for batch sweeps.
+    Returns a dict of key metrics (same ones printed in main()).
+    """
+    df = pd.read_csv(csv_path)
+
+    required = {"t_sec", "is_boundary"}
+    missing = required - set(df.columns)
+    if missing:
+        return {
+            "included": False,
+            "exclude_reason": f"missing_required_columns:{sorted(missing)}",
+        }
+
+    feature_names = [c.strip() for c in args.features.split(",") if c.strip()]
+    for f in feature_names:
+        if f not in df.columns:
+            return {
+                "included": False,
+                "exclude_reason": f"missing_feature:{f}",
+            }
+
+    # --- BEGIN: essentially your current main() logic, but without prints ---
+    boundary_step: Optional[int] = None
+    boundary_time: Optional[float] = None
+    boundary_idxs = df.index[df["is_boundary"].astype(int) == 1].tolist()
+    if boundary_idxs:
+        boundary_step = int(boundary_idxs[0])
+        boundary_time = float(df.loc[boundary_step, "t_sec"])
+
+    # Build feature ranges from this CSV
+    feature_ranges: Dict[str, Dict[str, float]] = {}
+    for name in feature_names:
+        col = df[name].astype(float)
+        vmin = float(col.min())
+        vmax = float(col.max())
+        if vmin == vmax:
+            vmax = vmin + 1.0
+        feature_ranges[name] = {"min": vmin, "max": vmax}
+
+    sp_params = {
+        "columnCount": 2048,
+        "potentialPct": 0.8,
+        "globalInhibition": True,
+        "synPermActiveInc": 0.003,
+        "synPermInactiveDec": 0.0005,
+        "synPermConnected": 0.2,
+        "boostStrength": 0.0,
+    }
+    tm_params = {
+        "cellsPerColumn": 32,
+        "activationThreshold": 20,
+        "initialPerm": 0.21,
+        "permanenceConnected": 0.5,
+        "minThreshold": 13,
+        "newSynapseCount": 31,
+        "permanenceInc": 0.1,
+        "permanenceDec": 0.0,
+        "predictedSegmentDecrement": 0.001,
+    }
+
+    session = HTMSession(
+        feature_names=feature_names,
+        enc_n_per_feature=args.enc_n_per_feature,
+        enc_w_per_feature=args.enc_w_per_feature,
+        sp_params=sp_params,
+        tm_params=tm_params,
+        seed=0,
+        anomaly_ema_alpha=args.ema_alpha,
+        feature_ranges=feature_ranges,
+    )
+    session.sp_learning = False
+
+    spike_cfg = SpikeDetectorConfig(
+        recent_window=sec_to_steps(args.spike_recent_sec, args.rate_hz),
+        prior_window=sec_to_steps(args.spike_prior_sec, args.rate_hz),
+        threshold_pct=args.spike_threshold_pct,
+        edge_only=True,
+        min_separation=sec_to_steps(args.spike_min_sep_sec, args.rate_hz),
+        min_delta=args.spike_min_delta,
+        eps=1e-3,
+    )
+    spike_detector = SpikeDetector(spike_cfg)
+
+    spikes: List[int] = []
+    states: List[float] = []
+    det_spike_step: Optional[int] = None
+    det_spike_time: Optional[float] = None
+
+    for i, row in df.iterrows():
+        t = float(row["t_sec"])
+        feats = {name: float(row[name]) for name in feature_names}
+
+        learn = True
+        if args.freeze_tm_after_boundary and boundary_step is not None and i >= boundary_step:
+            learn = False
+
+        out = session.step(feats, learn=learn)
+        state = float(out["mwl"])
+        states.append(state)
+
+        if args.reset_spike_at_boundary and boundary_step is not None and i == boundary_step:
+            spike_detector.reset()
+
+        spike_res = spike_detector.update(state)
+        spike_flag = bool(spike_res["spike"])
+        if spike_flag:
+            spikes.append(i)
+            if boundary_step is not None and det_spike_step is None and i >= boundary_step:
+                det_spike_step = i
+                det_spike_time = t
+
+    # False alarms before boundary
+    pre_end = len(df) if boundary_step is None else boundary_step
+    pre_spikes = [s for s in spikes if s < pre_end]
+    pre_minutes = (
+        (df.loc[pre_end - 1, "t_sec"] - float(df.loc[0, "t_sec"])) / 60.0
+        if pre_end > 1 else 0.0
+    )
+    false_alarms_spm = (len(pre_spikes) / pre_minutes) if pre_minutes > 0 else 0.0
+
+    # Sustained elevation + post persistence (only if boundary exists)
+    sustained_detected = False
+    sustained_lag_s: Optional[float] = None
+    post_elev_frac: Optional[float] = None
+
+    if boundary_step is not None:
+        persist_window_sec = args.persist_window_sec if args.persist_window_sec is not None else args.boundary_window_sec
+        persist_steps = sec_to_steps(float(persist_window_sec), args.rate_hz)
+
+        pre_start = max(0, boundary_step - persist_steps)
+        pre_states = states[pre_start:boundary_step]
+        post_states = states[boundary_step:]
+
+        if len(pre_states) >= 10 and len(post_states) >= 10:
+            pre_s = pd.Series(pre_states)
+            if args.persist_quantile is not None:
+                q = min(max(float(args.persist_quantile), 0.5), 0.999)
+                thr = float(pre_s.quantile(q))
+            else:
+                pre_med = float(pre_s.median())
+                pre_mad = float((pre_s - pre_med).abs().median())
+                thr = pre_med + float(args.elev_k_mad) * (pre_mad if pre_mad > 1e-9 else 1e-3)
+
+            post_elev_frac = float((pd.Series(post_states) > thr).mean())
+
+            hold_steps = sec_to_steps(float(args.elev_hold_sec), args.rate_hz)
+            det_elev_step: Optional[int] = None
+            for j in range(boundary_step, len(states) - hold_steps + 1):
+                if all(s > thr for s in states[j:j + hold_steps]):
+                    det_elev_step = j
+                    break
+
+            if det_elev_step is not None:
+                sustained_detected = True
+                det_elev_time = float(df.loc[det_elev_step, "t_sec"])
+                sustained_lag_s = float(det_elev_time - boundary_time) if boundary_time is not None else None
+
+    spike_detected = (det_spike_step is not None) if boundary_step is not None else False
+    spike_lag_s: Optional[float] = None
+    if boundary_step is not None and det_spike_time is not None and boundary_time is not None:
+        spike_lag_s = float(det_spike_time - boundary_time)
+
+    return {
+        "included": True,
+        "exclude_reason": "",
+        "has_boundary": boundary_step is not None,
+        "boundary_time_s": boundary_time if boundary_time is not None else None,
+        "spike_detected": bool(spike_detected),
+        "spike_lag_s": spike_lag_s,
+        "sustained_detected": bool(sustained_detected),
+        "sustained_lag_s": sustained_lag_s,
+        "false_alarms_spm": float(false_alarms_spm),
+        "post_elev_frac": post_elev_frac,
+        "n_spikes_total": int(len(spikes)),
+    }
+
 def main() -> None:
     args = parse_args()
     csv_path = Path(args.csv)

@@ -34,6 +34,16 @@ def load_scenarios(path: Path) -> dict:
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
+def infer_scenario_from_dir(d: Path) -> dict:
+    """
+    Build a scenario spec from a raw ALFA run directory.
+    """
+    spec = {"dir": d.name}
+    # prefer ground-truth if present
+    if any(p.name.startswith("failure_status") for p in d.glob("*.csv")):
+        spec["boundary"] = "failure_status"
+    return spec
+
 def resolve_scenario_files(base_dir: Path, scenario: dict) -> dict:
     d = base_dir / scenario["dir"]
     if not d.exists():
@@ -406,8 +416,20 @@ def build_stream(vfr_path: Path, status_path: Optional[Path], pitch_path: Option
 
     return stream, tinfo
 
+def write_one(name: str, stream: pd.DataFrame, bidx: Optional[int], out_path: Path) -> None:
+    stream = stream.copy()
+    stream["is_boundary"] = 0
+    if bidx is not None and 0 <= bidx < len(stream):
+        stream.loc[bidx, "is_boundary"] = 1
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    stream.to_csv(out_path, index=False)
+    print(f"Wrote {out_path}  (boundary={bidx})")
+
 def main():
     ap = argparse.ArgumentParser()
+
+    # --- Directory sweep mode (NEW) ---
+    ap.add_argument("--raw-dir", type=str, help="Directory containing raw UAV run folders")
 
     # --- YAML-driven mode (preferred, reproducible) ---
     ap.add_argument("--scenarios-yaml", type=str, help="YAML defining UAV scenarios")
@@ -433,6 +455,49 @@ def main():
     args = ap.parse_args()
 
     using_yaml = args.scenarios_yaml is not None
+    using_raw_dir = args.raw_dir is not None
+
+    if using_raw_dir and using_yaml:
+        ap.error("Use either --raw-dir OR --scenarios-yaml, not both.")
+
+    if using_raw_dir:
+        raw_dir = Path(args.raw_dir)
+        out_dir = Path(args.out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        for d in sorted(raw_dir.iterdir()):
+            if not d.is_dir():
+                continue
+
+            spec = infer_scenario_from_dir(d)
+            try:
+                files = resolve_scenario_files(raw_dir, spec)
+                stream, tinfo = build_stream(
+                    files["vfr"],
+                    files["status"],
+                    files["pitch"],
+                    files["roll"],
+                    files["yaw"],
+                    rate_hz=args.rate_hz,
+                )
+            except Exception as e:
+                print(f"[generate_uav_stream] SKIP {d.name}: {e}", file=sys.stderr)
+                continue
+
+            bidx = None
+            if files["status"] is not None:
+                bidx = _boundary_from_status(
+                    vfr_path=files["vfr"],
+                    status_path=files["status"],
+                    rate_hz=args.rate_hz,
+                    vfr_timeinfo=tinfo,
+                    stream_len=len(stream),
+                )
+
+            out_path = out_dir / f"{d.name}.csv"
+            write_one(d.name, stream, bidx, out_path)
+
+        return
 
     if using_yaml:
         if not (args.scenario or args.all):
@@ -448,15 +513,6 @@ def main():
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-
-    def write_one(name: str, stream: pd.DataFrame, bidx: Optional[int], out_path: Path) -> None:
-        stream = stream.copy()
-        stream["is_boundary"] = 0
-        if bidx is not None and 0 <= bidx < len(stream):
-            stream.loc[bidx, "is_boundary"] = 1
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        stream.to_csv(out_path, index=False)
-        print(f"Wrote {out_path}  (boundary={bidx})")
 
     if using_yaml:
         cfg = load_scenarios(Path(args.scenarios_yaml))
