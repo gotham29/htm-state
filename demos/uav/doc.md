@@ -79,8 +79,19 @@ that viewers can mentally reference throughout the document.
 > HTM-State live visualization showing raw flight signals (top) and internal
 > state evolution with spike and sustained indicators (bottom).
 
-> **Video (placeholder):**  
-> Short MP4 clip of the same run with real-time animation (to be added).
+## Live demo video assets (import contract)
+
+All live animations are expected to be placed in:
+
+```
+demos/uav/generated/media/
+```
+
+Videos are rendered at **1× real time** with identical overlays to the static plots:
+raw signals (top), HTM-State, spikes, sustained threshold, and failure boundary (bottom).
+
+Filenames are fixed and referenced below. Dropping the MP4s into this directory
+automatically completes the demo.
 
 > **Thumbnail (static reference):**
 >
@@ -183,7 +194,7 @@ From that reviewed set, four runs were selected for the live demo to:
 All reviewed runs — including weaker detections and misses — remain reported
 in `per_run.csv` and the extended metrics table below.
 
-> **Live demo = 4 runs total**
+> **Live demo = 5 runs total**
 
 ```
 selected_runs.yaml
@@ -242,6 +253,9 @@ These placeholders will later be replaced with short MP4 clips.
 
 ### Baseline (no failure)
 
+**Video:**  
+`baseline_no_failure__carbonZ_2018-10-18-11-08-24.mp4`
+
 ```
 time  ─────────────────────────────────────────▶
 signal     ~~~~~ ~~~~~ ~~~~~ ~~~~~ ~~~~~
@@ -262,6 +276,9 @@ and boundary overlays identical to the static figures.*
 
 ### Typical spike detection
 
+**Video:**  
+`typical_spike__carbonZ_2018-10-18-11-04-08_engine_failure.mp4`
+
 ```
 time  ─────────────────────────────────────────▶
 signal     ~~~~~ ~~~~~ ~~~╱╲~~~~~ ~~~~~
@@ -278,6 +295,9 @@ Expectation:
 ---
 
 ### Hard spike (delayed or weak)
+
+**Video:**  
+`hard_spike__carbonZ_2018-09-11-11-56-30_engine_failure.mp4`
 
 ```
 time  ─────────────────────────────────────────▶
@@ -296,6 +316,9 @@ Expectation:
 
 ### Sustained-only detection
 
+**Video:**  
+`sustained_only__carbonZ_2018-09-11-14-41-51_elevator_failure.mp4`
+
 ```
 time  ─────────────────────────────────────────▶
 signal     ~~~~~ ~~~~~ ~~~╱╲~~~~~ ~~~~~
@@ -312,6 +335,9 @@ Expectation:
 ---
 
 ### Miss (transparent failure)
+
+**Video:**  
+`miss__carbonZ_2018-09-11-14-22-07_engine_failure.mp4`
 
 ```
 time  ─────────────────────────────────────────▶
