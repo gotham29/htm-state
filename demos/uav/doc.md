@@ -25,7 +25,7 @@ After the offline sweep, a small number of representative runs are selected for 
 
 **Figure 1** summarizes detection performance, latency, and persistence across all ALFA UAV failure types under a strict, unsupervised evaluation protocol.
 
-![](../../results/uav_sweep/figure1_summary.png)
+![](generated/results/uav_sweep/figure1_summary.png)
 
 > Spike-based and sustained-elevation detection capture complementary workload dynamics.  
 > Control-surface and multi-fault scenarios exhibit higher persistence than compensable engine failures.
@@ -40,7 +40,11 @@ All evaluation is performed on per-run CSV streams located under:
 demos/uav/generated/
 ```
 
-Each CSV corresponds to a single UAV flight and includes:
+Each CSV corresponds to a single UAV flight and is written under:
+
+```
+demos/uav/generated/streams/{failure_type}/{run_id}.csv
+```
 - Time index (`t_sec`)
 - Flight and control features
 - A binary ground-truth failure boundary (`is_boundary`) when available
@@ -168,7 +172,7 @@ Each row corresponds to a single generated UAV stream.
 
 This table is used both for quantitative reporting and for selecting representative runs for visualization.
 
-**Output file:** `results/uav_sweep/per_run.csv`
+**Output file:** `demos/uav/generated/results/uav_sweep/summary_by_type.csv`
 
 ## Quantitative results
 
@@ -183,19 +187,46 @@ Notably, HTM-State exhibits increasing post-boundary persistence from engine to 
 
 **Output file:** `results/uav_sweep/summary_by_type.csv`
 
-## Representative live visualizations
+## Live animations (recommended for first-time readers)
 
-### Live (GIF) preview
+These short clips show the **two-panel live view** used throughout this demo:
 
-These are short “heartbeat-style” previews of the streaming visualization.
+- **Top panel**: selected flight/control signals (what the airframe is doing / what the controller is commanding).
+- **Bottom panel**: HTM-State outputs (state, spikes, sustained elevation), plus the **strict benchmark boundary** when available.
 
-While the offline sweep provides comprehensive quantitative coverage, a small number of runs are selected for **live streaming visualizations** to build intuition and demonstrate how HTM-State evolves over time.
+### 1) Baseline (no failure)
 
-These figures are illustrative only; all reported metrics come from the offline sweep.
+Use this as a “what normal looks like” reference. There is **no ground-truth boundary** in no-failure runs, so we show a
+representative stable window (often mid-run or late-run, after warm-up).
 
-**Live demo (engine failure — early instability):**
+<video controls playsinline width="900">
+  <source src="generated/media/uav_no_failure_baseline.mp4" type="video/mp4">
+</video>
 
-<video src="generated/media/uav_engine.mp4" controls width="720"></video>
+**How to read it:** you want **low anomaly/spike activity** and no sustained elevation over long stretches.
+
+### 2) Engine failure (transition window)
+
+This clip focuses on the failure transition window for an engine-failure run.
+
+<video controls playsinline width="900">
+  <source src="generated/media/uav_engine_failure_transition.mp4" type="video/mp4">
+</video>
+
+**How to read it:** the vertical boundary line marks the strict “toggle” time. A clean detection shows (i) **spikes after**
+the boundary and/or (ii) a sustained elevated state after the boundary with limited pre-boundary false alarms.
+This particular clip is a **hard case** (useful as a miss/ambiguity example).
+
+### 3) Control-surface multi-fault (transition window)
+
+This clip shows a “control surfaces” multi-fault style run (e.g., rudder/aileron related).
+
+<video controls playsinline width="900">
+  <source src="generated/media/uav_control_surface_failure_transition.mp4" type="video/mp4">
+</video>
+
+**How to read it:** compare pre-boundary vs post-boundary behavior. In tough cases the signals may degrade gradually,
+and strict scoring will penalize **pre-boundary spikes** as false alarms even if they look like plausible precursors.
 
 ### Selection criteria
 
@@ -222,7 +253,7 @@ Each selected run is visualized using the live streaming demo:
 Generated figures are stored under:
 
 ```
-demos/uav/generated/figures/{failure_type}/{figure}.png
+demos/uav/generated/figures/selected/{failure_type}/{figure}.png
 ```
 
 ## Reproducibility
@@ -244,25 +275,31 @@ demos/uav/raw/
 ### 2. Generate per-run UAV stream CSVs
 
     python scripts/generate_stream_uav.py \
-      --in demos/uav/raw \
-      --out demos/uav/generated
+      --raw-dir demos/uav/raw \
+      --out-dir demos/uav/generated/streams
+
+Artifacts are written under:
+- `demos/uav/generated/results/uav_sweep/` (coverage/per_run/summary CSVs + Figure 1)
+- `demos/uav/generated/figures/selected/` (representative per-run PNGs)
+- `demos/uav/generated/media/` (short MP4 clips used in this doc)
 
 ### 3. Run the offline sweep
 
     python scripts/run_offline_uav.py \
-      --generated-dir demos/uav/generated \
-      --outdir results/uav_sweep
+  --generated-dir demos/uav/generated \
+  --outdir demos/uav/generated/results/uav_sweep
 
 This produces:
-- `results/uav_sweep/per_run.csv`
-- `results/uav_sweep/summary_by_type.csv`
-- `results/uav_sweep/coverage.csv`
+- `demos/uav/generated/results/uav_sweep/per_run.csv`
+- `demos/uav/generated/results/uav_sweep/summary_by_type.csv`
+- `demos/uav/generated/results/uav_sweep/coverage.csv`
 
 ### 4. Generate live visualizations (optional)
 
     python scripts/run_live_uav.py \
-      --per-run results/uav_sweep/per_run.csv \
-      --outdir results/uav_sweep/figures
+      --per-run demos/uav/generated/results/uav_sweep/per_run.csv \
+      --coverage demos/uav/generated/results/uav_sweep/coverage.csv \
+      --outdir demos/uav/generated/figures/selected
 
 <details>
 <summary><b>Representative plot gallery (auto-generated)</b></summary>

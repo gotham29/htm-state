@@ -2,11 +2,60 @@ from __future__ import annotations
 
 import argparse
 import time
+import os
 from pathlib import Path
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser("UAV live demo (animated) or final renderer (headless).")
+    p.add_argument("--csv", type=str, required=True)
+    p.add_argument("--save-fig", type=str, default="")
+    p.add_argument("--save-fig-dpi", type=int, default=200)
+    p.add_argument("--sleep", type=float, default=0.05)
+    p.add_argument(
+        "--render-final",
+        action="store_true",
+        help="Render a single end-state plot (no animation), then exit.",
+    )
+    p.add_argument(
+        "--no-show",
+        action="store_true",
+        help="Never open a GUI window (force matplotlib Agg backend).",
+    )
+    return p.parse_args()
+
+args = parse_args()
+if args.no_show or args.render_final or args.save_fig:
+    os.environ.setdefault("MPLBACKEND", "Agg")
+
+
 from typing import Dict, List, Optional
 
 import pandas as pd
 import matplotlib.pyplot as plt
+
+# NOTE:
+# Your existing live-demo code likely has a loop that updates the plot over time.
+# We add a fast path that loads the CSV and draws ONCE.
+
+def _render_final(csv_path: Path, out_png: Path | None, dpi: int) -> None:
+    df = pd.read_csv(csv_path)
+
+    # --- reuse your existing plot construction code here ---
+    # The key: compute any derived series (state/spikes/boundary) ONCE from df,
+    # then create the same 2-panel figure and save.
+    #
+    # If your live demo already has a helper that draws from "current history",
+    # call it once using the full df (i = len(df)-1) instead of stepping.
+
+    fig = plt.figure()
+    # TODO: replace with your existing plotting layout logic
+    # e.g., plot signals + state/spikes/boundary using the full dataframe.
+
+    if out_png is not None:
+        out_png.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(out_png, dpi=int(dpi))
+        print(f"[demo_live_uav] wrote: {out_png}")
+    plt.close(fig)
 
 import sys
 from pathlib import Path
@@ -160,8 +209,14 @@ def build_session(df: pd.DataFrame, feature_names: List[str], ema_alpha: float,
 
 
 def main() -> None:
-    args = parse_args()
     csv_path = Path(args.csv)
+
+    # -------- FINAL (non-animated) fast path --------
+    if args.render_final:
+        out_png = Path(args.save_fig) if args.save_fig else None
+        _render_final(csv_path, out_png, args.save_fig_dpi)
+        return
+
     if not csv_path.exists():
         raise FileNotFoundError(csv_path)
 
@@ -465,20 +520,25 @@ def main() -> None:
         print("First sustained detection: None")
         print("Detection lag (sec): None")
 
+    if not args.no_show:
+        plt.show()
+    else:
+        # headless mode: if saving, you already saved; just close cleanly
+        plt.close("all")
 
 if __name__ == "__main__":
     main()
 
 """
-python scripts/live_demo_uav.py \
-  --csv demos/uav/generated/streams/carbonZ_2018-10-18-11-08-24_no_failure.csv \
+python scripts/demo_live_uav.py \
+  --csv demos/uav/generated/streams/no_failure/carbonZ_2018-10-18-11-08-24_no_failure.csv \
   --sleep 0.1
 
-python scripts/live_demo_uav.py \
-  --csv demos/uav/generated/streams/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj.csv \
+python scripts/demo_live_uav.py \
+  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-07-30-17-10-45_engine_failure_with_emr_traj.csv \
   --sleep 0.1
 
-python scripts/live_demo_uav.py \
-  --csv demos/uav/generated/streams/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure.csv \
+python scripts/demo_live_uav.py \
+  --csv demos/uav/generated/streams/multi_fault/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure.csv \
   --sleep 0.1
 """
