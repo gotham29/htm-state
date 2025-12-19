@@ -37,6 +37,25 @@ Flight & control signals
         └─ sustained elevation → “control regime changed”
 ```
 
+## How to watch the live demo (viewer guidance)
+
+When viewing the live animations or walkthrough:
+
+- **Ignore short-lived spikes unless they persist**  
+  Spikes alone indicate novelty, not operational difficulty.
+
+- **Track the HTM-State baseline after the failure boundary**  
+  Sustained elevation — not peak height — is the primary signal of interest.
+
+- **Compare persistence across runs, not exact timing**  
+  Different failures accumulate workload at different rates.
+
+- **Use the baseline run as your calibration anchor**  
+  It defines the expected false-alarm behavior under normal flight.
+
+If you remember one rule:  
+**Persistence > peaks.**
+
 **Key distinction**
 
 - **Spikes** indicate *awareness of change or novelty*
@@ -150,6 +169,20 @@ These definitions correspond directly to the metrics reported in
 For the **live demo**, we focus on **four canonical runs** — one per response regime.
 These runs are chosen for *clarity and interpretability*, not peak metrics.
 
+### How these runs were selected
+
+During development, we reviewed approximately **8–10 representative runs**
+covering all failure types and response behaviors observed in the full sweep.
+
+From that reviewed set, four runs were selected for the live demo to:
+
+- Span all four HTM-State response regimes
+- Avoid extreme or ambiguous edge cases
+- Maximize visual clarity in real-time playback
+
+All reviewed runs — including weaker detections and misses — remain reported
+in `per_run.csv` and the extended metrics table below.
+
 > **Live demo = 4 runs total**
 
 ```
@@ -221,6 +254,9 @@ Expectation:
 - Low, stable internal state
 - Occasional isolated spikes
 - Serves as a *trust anchor* for false-alarm behavior
+
+*Videos play at 1× real time with synchronized signal, state, spike,
+and boundary overlays identical to the static figures.*
 
 ---
 
