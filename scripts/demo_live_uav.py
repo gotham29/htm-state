@@ -791,15 +791,29 @@ if __name__ == "__main__":
     main()
 
 """
+# BASELINE
 python scripts/demo_live_uav.py \
   --csv demos/uav/generated/streams/no_failure/carbonZ_2018-10-18-11-08-24_no_failure.csv \
   --sleep 0.1
 
+# TYPICAL SPIKE DETECTION
 python scripts/demo_live_uav.py \
-  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-07-30-17-10-45_engine_failure_with_emr_traj.csv \
+  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj.csv \
   --sleep 0.1
 
+# HARD SPIKE
 python scripts/demo_live_uav.py \
-  --csv demos/uav/generated/streams/multi_fault/carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure.csv \
+  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-09-11-11-56-30_engine_failure.csv \
   --sleep 0.1
+
+# SUSTAINED 
+python scripts/demo_live_uav.py \
+  --csv demos/uav/generated/streams/elevator_failure/carbonZ_2018-09-11-14-41-51_elevator_failure.csv \
+  --sleep 0.1
+
+# MISS
+python scripts/demo_live_uav.py \
+  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-09-11-14-22-07_1_engine_failure.csv \
+  --sleep 0.1
+
 """
