@@ -138,7 +138,6 @@ strict, unsupervised evaluation policy.
 > used throughout this demo. HTM-State operates only on control and navigation
 > signals; failure labels are used **solely for evaluation and visualization**.*
 
-
 > **Figure (static):**  
 > Three-panel benchmark summary:
 >
@@ -351,9 +350,10 @@ Expectation:
 - No meaningful internal response
 - Included to show failure modes explicitly
 - Reinforces credibility of the system
-```
+
 
 ---
+
 
 # HTM-State UAV Demo — Operational Takeaways
 
