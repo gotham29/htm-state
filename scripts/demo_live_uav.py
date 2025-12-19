@@ -1,59 +1,283 @@
 from __future__ import annotations
-
+from dataclasses import dataclass
 import argparse
 import time
 import os
 from pathlib import Path
-
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser("UAV live demo (animated) or final renderer (headless).")
-    p.add_argument("--csv", type=str, required=True)
-    p.add_argument("--save-fig", type=str, default="")
-    p.add_argument("--save-fig-dpi", type=int, default=200)
-    p.add_argument("--sleep", type=float, default=0.05)
-    p.add_argument(
-        "--render-final",
-        action="store_true",
-        help="Render a single end-state plot (no animation), then exit.",
-    )
-    p.add_argument(
-        "--no-show",
-        action="store_true",
-        help="Never open a GUI window (force matplotlib Agg backend).",
-    )
-    return p.parse_args()
-
-args = parse_args()
-if args.no_show or args.render_final or args.save_fig:
-    os.environ.setdefault("MPLBACKEND", "Agg")
-
 
 from typing import Dict, List, Optional
 
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# NOTE:
-# Your existing live-demo code likely has a loop that updates the plot over time.
-# We add a fast path that loads the CSV and draws ONCE.
+@dataclass
+class _RunOutputs:
+    ts: List[float]
+    state_series: List[float]
+    thr_series: List[Optional[float]]
+    spike_steps: List[int]
+    persist_steps: List[int]
+    boundary_time: Optional[float]
+    first_sustained_time: Optional[float]
+    detection_lag_sec: Optional[float]
+    persist_is_frozen: bool
+    frozen_step: Optional[int]
 
-def _render_final(csv_path: Path, out_png: Path | None, dpi: int) -> None:
+def _compute_series_fast(
+    df: pd.DataFrame,
+    feature_names: List[str],
+    rate_hz: float,
+    boundary_step: Optional[int],
+    boundary_time: Optional[float],
+    session: "HTMSession",
+    spike_detector: "SpikeDetector",
+    persistence_detector: "PersistenceDetector",
+    freeze_tm_after_boundary: bool,
+    freeze_persist_baseline_at_boundary: bool,
+    reset_detectors_at_boundary: bool,
+) -> _RunOutputs:
+    ts: List[float] = []
+    state_series: List[float] = []
+    thr_series: List[Optional[float]] = []
+    spike_steps: List[int] = []
+    persist_steps: List[int] = []
+    persist_is_frozen: bool = False
+    frozen_step: Optional[int] = None
+
+    first_sustained_time: Optional[float] = None
+    detection_lag_sec: Optional[float] = None
+
+    for i, row in df.iterrows():
+        t = float(row["t_sec"])
+        feats = {name: float(row[name]) for name in feature_names}
+
+        # Freeze persistence baseline at boundary (if requested).
+        if freeze_persist_baseline_at_boundary and boundary_step is not None and i == boundary_step:
+            persistence_detector.freeze_baseline()
+            persist_is_frozen = True
+            frozen_step = i
+
+        learn = True
+        if freeze_tm_after_boundary and boundary_step is not None and i >= boundary_step:
+            learn = False
+
+        # Optional: reset detectors exactly at boundary.
+        if reset_detectors_at_boundary and boundary_step is not None and i == boundary_step:
+            if hasattr(spike_detector, "reset"):
+                spike_detector.reset()
+            if hasattr(persistence_detector, "freeze_baseline"):
+                persistence_detector.freeze_baseline()
+                persist_is_frozen = True
+                frozen_step = i
+
+        out = session.step(feats, learn=learn)
+        state = float(out["mwl"])
+
+        spike_res = spike_detector.update(state)
+        if int(spike_res.get("spike", 0)) == 1:
+            spike_steps.append(i)
+
+        pers_res = persistence_detector.update(state)
+        thr = pers_res.get("thr", pers_res.get("threshold"))
+        thr_series.append(float(thr) if thr is not None else None)
+
+        is_sustained = bool(pers_res.get("sustained", pers_res.get("persistent", False)))
+        if is_sustained:
+            persist_steps.append(i)
+            if boundary_time is not None and boundary_step is not None and i >= boundary_step and first_sustained_time is None:
+                first_sustained_time = float(t)
+                detection_lag_sec = first_sustained_time - float(boundary_time)
+
+        ts.append(t)
+        state_series.append(state)
+
+    return _RunOutputs(
+        ts=ts,
+        state_series=state_series,
+        thr_series=thr_series,
+        spike_steps=spike_steps,
+        persist_steps=persist_steps,
+        boundary_time=boundary_time,
+        first_sustained_time=first_sustained_time,
+        detection_lag_sec=detection_lag_sec,
+        persist_is_frozen=persist_is_frozen,
+        frozen_step=frozen_step,
+    )
+
+def _render_final(
+    csv_path: Path,
+    out_png: Path | None,
+    dpi: int,
+    feature_names: List[str],
+    rate_hz: float,
+    ema_alpha: float,
+    enc_n_per_feature: int,
+    enc_w_per_feature: int,
+    freeze_tm_after_boundary: bool,
+    reset_detectors_at_boundary: bool,
+    freeze_persist_baseline_at_boundary: bool,
+    spike_recent_sec: float,
+    spike_prior_sec: float,
+    spike_threshold_pct: float,
+    spike_min_sep_sec: float,
+    spike_min_delta: float,
+    elev_baseline_sec: float,
+    elev_k_mad: float,
+    elev_hold_sec: float,
+    elev_min_sep_sec: float,
+) -> None:
     df = pd.read_csv(csv_path)
+    if "t_sec" not in df.columns:
+        raise ValueError("CSV missing required column: t_sec")
+    if "is_boundary" not in df.columns:
+        raise ValueError("CSV missing required column: is_boundary")
 
-    # --- reuse your existing plot construction code here ---
-    # The key: compute any derived series (state/spikes/boundary) ONCE from df,
-    # then create the same 2-panel figure and save.
-    #
-    # If your live demo already has a helper that draws from "current history",
-    # call it once using the full df (i = len(df)-1) instead of stepping.
+    for f in feature_names:
+        if f not in df.columns:
+            raise ValueError(f"Requested feature '{f}' not in CSV columns: {list(df.columns)}")
 
-    fig = plt.figure()
-    # TODO: replace with your existing plotting layout logic
-    # e.g., plot signals + state/spikes/boundary using the full dataframe.
+    boundary_idxs = df.index[df["is_boundary"].astype(int) == 1].tolist()
+    boundary_step: Optional[int] = int(boundary_idxs[0]) if boundary_idxs else None
+    boundary_time: Optional[float] = float(df.loc[boundary_step, "t_sec"]) if boundary_step is not None else None
+
+    session = build_session(
+        df=df,
+        feature_names=feature_names,
+        ema_alpha=ema_alpha,
+        enc_n_per_feature=enc_n_per_feature,
+        enc_w_per_feature=enc_w_per_feature,
+    )
+
+    spike_cfg = SpikeDetectorConfig(
+        recent_window=sec_to_steps(spike_recent_sec, rate_hz),
+        prior_window=sec_to_steps(spike_prior_sec, rate_hz),
+        threshold_pct=spike_threshold_pct,
+        min_delta=spike_min_delta,
+    )
+    spike_detector = SpikeDetector(spike_cfg)
+
+    pers_cfg = PersistenceDetectorConfig(
+        baseline_window=sec_to_steps(elev_baseline_sec, rate_hz),
+        k_mad=elev_k_mad,
+        hold_steps=sec_to_steps(elev_hold_sec, rate_hz),
+    )
+    persistence_detector = PersistenceDetector(pers_cfg)
+
+    outs = _compute_series_fast(
+        df=df,
+        feature_names=feature_names,
+        rate_hz=rate_hz,
+        boundary_step=boundary_step,
+        boundary_time=boundary_time,
+        session=session,
+        spike_detector=spike_detector,
+        persistence_detector=persistence_detector,
+        freeze_tm_after_boundary=freeze_tm_after_boundary,
+        freeze_persist_baseline_at_boundary=freeze_persist_baseline_at_boundary,
+        reset_detectors_at_boundary=reset_detectors_at_boundary,
+    )
+
+    # ---- final draw (single shot) ----
+    fig, (ax0, ax1) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+    fig.suptitle(f"HTM-State Live Demo (UAV)\nFailure scenario: {csv_path.stem.replace('_', ' ')}")
+
+    show_feats = feature_names[:3] if len(feature_names) >= 3 else feature_names
+
+    # Boundary line on BOTH panels
+    if outs.boundary_time is not None:
+        ax0.axvline(outs.boundary_time, linestyle=":", linewidth=2)
+        ax1.axvline(outs.boundary_time, linestyle=":", linewidth=2)
+
+    # signals panel (display-only z-score normalization)
+    for f in show_feats:
+        ax0.plot(outs.ts, zscore(df[f]).values, label=f)
+    ax0.set_ylabel("signals (z-score)")
+    ax0.set_ylim(*fixed_ylim_zscore())
+    ax0.legend(loc="upper left", ncol=min(3, len(show_feats)))
+
+    # state panel
+    ax1.set_ylim(*fixed_state_ylim())
+    ax1.plot(outs.ts, outs.state_series, linewidth=2.75, color="C0", label="HTM-State (mwl)")
+
+    if any(v is not None for v in outs.thr_series):
+        thr_y = [v if v is not None else float("nan") for v in outs.thr_series]
+        ax1.plot(
+            outs.ts,
+            thr_y,
+            linestyle="--",
+            linewidth=2,
+            alpha=0.9 if outs.persist_is_frozen else 0.6,
+            label="elev_thr (median + k*MAD)",
+        )
+        if outs.persist_is_frozen and outs.frozen_step is not None and outs.frozen_step < len(outs.ts):
+            ax1.text(
+                outs.ts[outs.frozen_step],
+                fixed_state_ylim()[1] * 0.90,
+                "persist baseline frozen",
+                rotation=90,
+                verticalalignment="top",
+                horizontalalignment="right",
+                fontsize=8,
+                alpha=0.8,
+            )
+    if outs.spike_steps:
+        ax1.scatter(
+            [outs.ts[j] for j in outs.spike_steps if j < len(outs.ts)],
+            [outs.state_series[j] for j in outs.spike_steps if j < len(outs.state_series)],
+            marker="^",
+            label="spike",
+            zorder=5,
+        )
+
+    if outs.persist_steps:
+        ax1.scatter(
+            [outs.ts[j] for j in outs.persist_steps if j < len(outs.ts)],
+            [outs.state_series[j] + 0.03 for j in outs.persist_steps if j < len(outs.state_series)],
+            marker="s",
+            label="sustained",
+            zorder=6,
+        )
+
+    if outs.boundary_time is not None:
+        ax1.text(
+            outs.boundary_time,
+            fixed_state_ylim()[1] * 0.95,
+            "Failure injected",
+            rotation=90,
+            verticalalignment="top",
+            horizontalalignment="right",
+            fontsize=9,
+            alpha=0.8,
+        )
+
+    ax1.set_xlabel("t_sec")
+    ax1.set_ylabel("state")
+    ax1.legend(loc="upper left")
+
+    # metrics summary box
+    if outs.boundary_time is None:
+        summary_lines = ["Metrics summary", "boundary: None", "first sustained: None", "lag: None"]
+    else:
+        summary_lines = [
+            "Metrics summary",
+            f"boundary: {outs.boundary_time:.1f}s",
+            (f"first sustained: {outs.first_sustained_time:.1f}s" if outs.first_sustained_time is not None else "first sustained: None"),
+            (f"lag: {outs.detection_lag_sec:.1f}s" if outs.detection_lag_sec is not None else "lag: None"),
+        ]
+    ax1.text(
+        0.99,
+        0.02,
+        "\n".join(summary_lines),
+        transform=ax1.transAxes,
+        ha="right",
+        va="bottom",
+        fontsize=9,
+        bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.85, linewidth=0.5),
+    )
 
     if out_png is not None:
         out_png.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(out_png, dpi=int(dpi))
+        fig.savefig(out_png, dpi=int(dpi), bbox_inches="tight")
         print(f"[demo_live_uav] wrote: {out_png}")
     plt.close(fig)
 
@@ -104,6 +328,18 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--csv", type=str, required=True, help="Generated UAV CSV (from generate_uav_stream.py)")
     p.add_argument("--rate-hz", type=float, default=10.0)
     p.add_argument("--sleep", type=float, default=0.10, help="Seconds to sleep per step (visual pacing)")
+
+    # Offline renderer mode (single-shot, no animation)
+    p.add_argument(
+        "--render-final",
+        action="store_true",
+        help="Render a single end-state plot (no animation), then exit.",
+    )
+    p.add_argument(
+        "--no-show",
+        action="store_true",
+        help="Never open a GUI window (useful for batch/offline rendering).",
+    )
 
     p.add_argument(
         "--features",
@@ -209,12 +445,37 @@ def build_session(df: pd.DataFrame, feature_names: List[str], ema_alpha: float,
 
 
 def main() -> None:
+    args = parse_args()
+    if args.no_show:
+        os.environ.setdefault("MPLBACKEND", "Agg")
     csv_path = Path(args.csv)
 
     # -------- FINAL (non-animated) fast path --------
     if args.render_final:
-        out_png = Path(args.save_fig) if args.save_fig else None
-        _render_final(csv_path, out_png, args.save_fig_dpi)
+        out_png = Path(args.save_fig) if args.save_fig else default_save_path(csv_path)
+        feature_names = [c.strip() for c in args.features.split(",") if c.strip()]
+        _render_final(
+            csv_path=csv_path,
+            out_png=out_png,
+            dpi=int(args.save_fig_dpi),
+            feature_names=feature_names,
+            rate_hz=float(args.rate_hz),
+            ema_alpha=float(args.ema_alpha),
+            enc_n_per_feature=int(args.enc_n_per_feature),
+            enc_w_per_feature=int(args.enc_w_per_feature),
+            freeze_tm_after_boundary=bool(args.freeze_tm_after_boundary),
+            reset_detectors_at_boundary=bool(args.reset_detectors_at_boundary),
+            freeze_persist_baseline_at_boundary=bool(args.freeze_persist_baseline_at_boundary),
+            spike_recent_sec=float(args.spike_recent_sec),
+            spike_prior_sec=float(args.spike_prior_sec),
+            spike_threshold_pct=float(args.spike_threshold_pct),
+            spike_min_sep_sec=float(args.spike_min_sep_sec),
+            spike_min_delta=float(args.spike_min_delta),
+            elev_baseline_sec=float(args.elev_baseline_sec),
+            elev_k_mad=float(args.elev_k_mad),
+            elev_hold_sec=float(args.elev_hold_sec),
+            elev_min_sep_sec=float(args.elev_min_sep_sec),
+        )
         return
 
     if not csv_path.exists():

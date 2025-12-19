@@ -83,6 +83,7 @@ def main() -> None:
         raise FileNotFoundError(f"Could not find demo_live_uav.py at expected path(s).")
 
     n = 0
+    failed = 0
     for rid in sorted(run_to_csv.keys()):
         csv_path = run_to_csv[rid]
         ft = run_to_ft.get(rid, "unknown")
@@ -90,6 +91,10 @@ def main() -> None:
         ft_dir = outdir / ft
         ft_dir.mkdir(parents=True, exist_ok=True)
         out_png = ft_dir / f"{rid}.png"
+
+        if out_png.exists():
+            print(f"[render_offline_uav_plots] skip exists: {out_png}")
+            continue
 
         cmd = [
             args.python,
@@ -105,8 +110,13 @@ def main() -> None:
         ]
 
         print(f"[render_offline_uav_plots] RUN: {rid} -> {out_png}")
-        subprocess.check_call(cmd)
-        n += 1
+        try:
+            subprocess.check_call(cmd)
+            n += 1
+        except subprocess.CalledProcessError as e:
+            failed += 1
+            print(f"[render_offline_uav_plots] FAILED: {rid} ({e})\n  cmd={' '.join(cmd)}")
+
 
     print(f"[render_offline_uav_plots] wrote {n} plots under: {outdir}")
 
