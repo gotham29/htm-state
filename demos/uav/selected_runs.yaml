@@ -57,3 +57,6 @@ selected:
     - run_id: carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure
       tag: hard_spike
       figure: carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure__hard_spike.png
+
+version: 2
+selection_policy: "illustrative / qualitative (see doc.md)"
