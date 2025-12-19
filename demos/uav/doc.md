@@ -96,11 +96,6 @@ automatically completes the demo.
 > **Thumbnail (static reference):**
 >
 > ![HTM-State canonical engine failure run](results/uav_sweep/figures/selected/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj__typical_spike.png)
->
-> *Canonical HTM-State response to an engine failure.  
-> Raw control signals are shown above; HTM-State evolution, spikes, and sustained
-> elevation are shown below. This figure serves as a visual reference point for all
-> response regimes discussed in the remainder of the document.*
 
 ## The four HTM-State response regimes we see
 
