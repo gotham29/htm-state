@@ -113,6 +113,7 @@ def main() -> None:
             "sustained_lag_s": res.get("sustained_lag_s", None),
             "false_alarms_spm": res.get("false_alarms_spm", None),
             "post_elev_frac": res.get("post_elev_frac", None),
+            "max_state_post_boundary": res.get("max_state_post_boundary", None),
             "n_spikes_total": res.get("n_spikes_total", None),
         })
 
@@ -146,6 +147,7 @@ def main() -> None:
 
         fa_med = float(g["false_alarms_spm"].median()) if n else float("nan")
         post_med = float(g["post_elev_frac"].median()) if n else float("nan")
+        max_post_med = float(g["max_state_post_boundary"].median()) if ("max_state_post_boundary" in g.columns and n) else float("nan")
 
         summary_rows.append({
             "failure_type": ftype,
@@ -156,6 +158,7 @@ def main() -> None:
             "median_sust_lag_s": sust_lag_med,
             "median_false_alarms_spm": fa_med,
             "median_post_elev_frac": post_med,
+            "median_max_state_post_boundary": max_post_med,
         })
 
     summary_df = pd.DataFrame(summary_rows).sort_values(["failure_type"])

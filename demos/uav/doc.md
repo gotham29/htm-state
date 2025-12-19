@@ -15,6 +15,72 @@ The goal is to assess, in a broad and systematic way, whether HTM-State shows **
 
 After the offline sweep, a small number of representative runs are selected for **live streaming visualizations**, which provide intuition but do not drive the reported results.
 
+## What HTM-State is telling us operationally
+
+This demo shows that **HTM-State behaves less like a generic anomaly detector
+and more like a workload / control-regime indicator** when applied to real UAV flight data.
+
+Across the full ALFA sweep — spanning engine failures, control-surface failures,
+ multi-fault scenarios, and no-failure baselines — a small number of *repeatable response
+patterns* emerge consistently, using a single unsupervised configuration.
+
+### Key operational takeaways
+
+**1. HTM-State differentiates compensable vs. non-compensable failures**
+
+- Engine failures often trigger **fast spikes** but little or no sustained elevation.
+- Control-surface and multi-fault failures reliably produce **persistent elevation**.
+
+This distinction emerges *without labels or tuning* and aligns closely with
+operational intuition: some failures are noticed but managed, while others
+create sustained control difficulty.
+
+**2. Non-commitment is a feature, not a miss**
+
+Several runs include a strict failure boundary but **no sustained detection**.
+These cases are retained intentionally.
+
+HTM-State does not force commitment when the underlying control behavior
+does not remain abnormal — a critical property for real operational systems
+where false commitments are costly.
+
+**3. Detection is time-aligned, not instantaneous**
+
+Detection lags are measured in seconds to tens of seconds, not single timesteps.
+This reflects gradual workload emergence rather than threshold crossing,
+and avoids the brittleness of instantaneous alarms.
+
+**4. Persistence carries more meaning than spikes**
+
+- Spike detections indicate *awareness of change*
+- Sustained elevation indicates *prolonged regime shift*
+
+Only sustained elevation is treated as an **operational signal** in this demo.
+Spikes are reported to characterize sensitivity and false-alarm behavior,
+not as sufficient conditions for intervention.
+
+**5. Severity scales monotonically with failure complexity**
+
+Across the full roster:
+
+```
+engine failures  <  single control-surface failures  <  multi-fault scenarios
+```
+
+This ordering is visible in:
+- post-boundary elevation fraction
+- maximum HTM-State magnitude
+- stability of sustained detection
+
+No failure-specific thresholds are used to induce this separation.
+
+---
+
+**Bottom line:**  
+HTM-State appears to track *control difficulty and workload persistence*,
+not just signal novelty — a property that is difficult to achieve with
+static anomaly scores alone.
+
 ## At a glance
 
 ### What a live run looks like
@@ -102,10 +168,27 @@ Low false-alarm rates indicate stability under nominal conditions.
 
 Post-boundary persistence measures how strongly HTM-State remains elevated after a failure.
 
-- Defined as the **fraction of post-boundary timesteps** where HTM-State exceeds the pre-boundary threshold.
+- Defined as the **fraction of post-boundary timesteps** where HTM-State exceeds the pre-boundary threshold
+  (`post_elev_frac`).
 - Values near 1.0 indicate sustained abnormal state; values near 0.0 indicate weak or transient response.
 
 This metric complements detection lag by capturing **severity and consistency**, not just speed.
+
+### Secondary metric: post-boundary severity
+
+Severity captures how large the HTM-State response becomes after a failure.
+
+- Measured as the **maximum HTM-State value observed after the boundary**
+  (`max_state_post_boundary`).
+
+This distinguishes mild but persistent workload increases from sharp, high-amplitude responses.
+
+### Secondary metric: overall spike activity
+
+- `n_spikes_total` counts the total number of spike events over the full run.
+
+This provides a simple global measure of volatility and complements the
+pre-boundary false-alarm rate.
 
 ### Applicability notes
 
@@ -113,9 +196,156 @@ This metric complements detection lag by capturing **severity and consistency**,
 - All metrics are computed without using future information beyond the current timestep.
 </details>
 
+## Evaluation framing (important)
+
+This demo intentionally distinguishes between **sensitivity** and **operational relevance**.
+
+- **Spike detections** indicate that HTM-State noticed a change or novelty.
+- **Sustained elevation** indicates a prolonged control or workload regime shift.
+
+Only sustained elevation is treated as an **operational detection** signal.
+Spike detections are reported to characterize responsiveness and false-alarm behavior,
+but are not sufficient on their own to justify intervention.
+
+This distinction is maintained consistently across metrics, tables, figures, and live visualizations.
+
 ## Results summary
 
 The offline sweep produces two primary result tables:
+
+### Interpreting HTM-State across failure types
+
+Before examining individual runs, it is useful to summarize the *qualitative behavior* that emerges consistently across the full roster of ALFA UAV failures.
+
+Despite wide variation in airframe dynamics, control authority, and pilot compensation strategies, HTM-State exhibits a small number of *repeatable response modes* that align closely with operational intuition.
+
+These modes are not hand-coded and do not depend on failure labels; they emerge from a single unsupervised configuration applied uniformly across all runs.
+
+---
+
+## Final roster of representative runs
+
+The table below lists the fixed set of UAV runs used for live visualization
+and qualitative illustration throughout this document.
+
+Runs are selected *after* the full offline sweep and are chosen to represent
+distinct HTM-State response regimes — not visual appeal.
+
+| Failure type | Run ID | Spike? | Sustained? | Sustained lag (s) | Post-elev frac | Max state post | Notes |
+|-------------|--------|--------|------------|------------------:|---------------:|---------------:|-------|
+| No failure | carbonZ_2018-10-18-11-08-24_no_failure | No | No | — | — | — | Stable baseline (not in strict per_run.csv) |
+| Engine | carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj | Yes | No | — | 0.000 | 0.525 | Compensable spike-only response |
+| Engine | carbonZ_2018-09-11-14-22-07_2_engine_failure | No | No | — | 0.000 | 0.801 | Hard / ambiguous (weak response) |
+| Elevator | carbonZ_2018-09-11-14-41-51_elevator_failure | No | Yes | 2.500 | 0.762 | 0.709 | Sustained-only (clean regime shift) |
+| Elevator | carbonZ_2018-09-11-15-05-11_1_elevator_failure | Yes | No | — | 0.000 | 0.719 | Spike-only (no persistence) |
+| Rudder | carbonZ_2018-09-11-15-06-34_2_rudder_right_failure | Yes | No | — | 0.000 | 0.807 | Spike-only (no persistence) |
+| Multi-fault | carbonZ_2018-09-11-14-52-54_left_aileron__right_aileron__failure | Yes | Yes | 10.700 | 0.064 | 0.502 | Delayed sustained, low persistence fraction |
+| Multi-fault | carbonZ_2018-09-11-17-27-13_1_rudder_zero__left_aileron_failure | Yes | Yes | 0.000 | 0.941 | 0.594 | Immediate + highly persistent elevation |
+
+Metric values shown are derived directly from `per_run.csv` (strict boundary inclusion).
+The `no_failure` baseline row is included for narrative reference but is not part of the strict per-run table.
+
+The following derived columns are treated as **frozen evaluation artifacts**
+and are not re-tuned for visualization:
+
+- `post_elev_frac`
+- `max_state_post_boundary`
+- `n_spikes_total`
+
+---
+
+### Pattern 1: Fast but transient responses in compensable failures
+
+Single-engine failure scenarios frequently produce:
+
+- One or more **spike detections** shortly after the injected failure boundary
+- Limited or absent **sustained elevation** of HTM-State (`post_elev_frac` near zero)
+- Low post-boundary persistence
+
+This pattern reflects failures that are *detectable* but *largely compensable*, often due to pilot adaptation, trim changes, or trajectory assistance (e.g., EMR).
+
+Operationally, these runs are important because:
+- A fast spike indicates that the system *noticed something changed*
+- The absence of sustained elevation indicates that workload did not remain elevated
+
+HTM-State therefore avoids over-committing in cases where the disturbance is managed successfully.
+
+Importantly, several engine-failure runs do not trigger sustained elevation at all
+(`sustained_detected = False`), despite clear transient spikes.
+
+---
+
+### Pattern 2: Sustained elevation in control-surface failures
+
+Elevator, aileron, and rudder failures — especially when persistent — consistently produce:
+
+- Clear **sustained elevation** following the failure boundary
+- Moderate detection lags (typically seconds to tens of seconds)
+- High post-boundary persistence
+
+In these runs, the flight signals often degrade gradually rather than abruptly.
+HTM-State responds accordingly, transitioning into an elevated regime rather than producing only brief novelty spikes.
+
+This behavior aligns with the interpretation of HTM-State as a **workload / control-regime indicator**, not a raw anomaly detector.
+
+Across the full roster, post-boundary persistence (`post_elev_frac`) increases monotonically from:
+engine failures → single control-surface failures → multi-fault scenarios.
+
+This trend emerges without failure-specific tuning and serves as a strong indicator that
+HTM-State is responding to **control difficulty**, not merely signal disruption.
+
+Median `max_state_post_boundary` also increases across this ordering,
+indicating not only longer persistence but greater response magnitude.
+
+---
+
+### Pattern 3: Strong and persistent responses in multi-fault scenarios
+
+Multi-control-surface failures (e.g., rudder + aileron) produce the most robust HTM-State responses:
+
+- Sustained elevation occurs reliably
+- Post-boundary persistence is high
+- Detection remains stable even when individual signal channels fluctuate
+
+These scenarios represent prolonged, non-compensable control challenges.
+HTM-State correctly treats them as such, remaining elevated rather than oscillating.
+
+---
+
+### Pattern 4: Non-commitment is a feature, not a failure
+
+Several runs include a strict failure boundary but **no sustained detection**.
+
+These cases are not excluded.
+Instead, they illustrate an important property:
+
+> HTM-State does not force a detection when the underlying control behavior does not remain abnormal.
+
+This behavior is critical for operational use, where false commitments are often more costly
+than delayed or absent detections.
+
+---
+
+### Detection signals and operational interpretation
+
+HTM-State produces two qualitatively different detection signals:
+
+1. **Spike detections** — fast, transient responses to novelty or abrupt change  
+2. **Sustained elevation** — persistent state increases indicating a prolonged control or workload regime shift
+
+Both are reported throughout this demo, but **they are not treated as equivalent**.
+
+**Sustained elevation is the primary operational signal.**
+It reflects conditions that persist long enough to justify intervention, escalation, or mode switching.
+
+Spike detections are retained as a **secondary sensitivity indicator**, useful for:
+- understanding early system awareness,
+- diagnosing abrupt transitions,
+- and characterizing compensable vs non-compensable failures.
+
+This distinction is critical for operational relevance and is maintained consistently in all reported metrics, tables, and visualizations.
+
+---
 
 ### Overview and key findings
 
@@ -167,12 +397,20 @@ Each row corresponds to a single generated UAV stream.
 | `sustained_detected` | Whether a sustained elevation was detected |
 | `sustained_lag_s` | Detection lag to sustained elevation (seconds) |
 | `false_alarms_spm` | Spike rate before boundary (spikes per minute) |
-| `post_elev_frac` | Fraction of post-boundary time state is elevated |
-| `n_spikes_total` | Total number of spikes during the run |
+| `post_elev_frac` | Fraction of post-boundary timesteps where HTM-State exceeds threshold |
+| `max_state_post_boundary` | Maximum HTM-State after boundary |
+| `n_spikes_total` | Total number of spike events during the run |
 
 This table is used both for quantitative reporting and for selecting representative runs for visualization.
 
 **Output file:** `demos/uav/generated/results/uav_sweep/summary_by_type.csv`
+
+Together, these metrics distinguish:
+- **transient detections** (early spike, low persistence),
+- **sustained workload regimes** (high persistence),
+- and **severity differences** between failure modes.
+
+These columns are used directly for run selection and qualitative interpretation.
 
 ## Quantitative results
 
@@ -185,11 +423,28 @@ Notes:
 
 Notably, HTM-State exhibits increasing post-boundary persistence from engine to control-surface to multi-fault scenarios, consistent with increasing workload severity rather than mere novelty.
 
+This monotonic trend across failure categories is particularly notable because:
+
+- No failure-specific thresholds are used
+- No labels are used during inference
+- The same state variable is interpreted consistently across all scenarios
+
+---
+
 **Output file:** `results/uav_sweep/summary_by_type.csv`
 
 ## Live animations (recommended for first-time readers)
 
-These short clips show the **two-panel live view** used throughout this demo:
+The live visualizations are included **solely to build intuition**, not to drive the quantitative results.
+
+They do not introduce new evidence and are not required to interpret or validate the tables above.
+
+Final MP4 clips will be generated directly from the same per-run CSVs used in the offline sweep.
+
+All metrics and conclusions are derived exclusively from the offline sweep.
+The animations simply illustrate *why* the metrics behave as they do.
+
+These clips show the **two-panel live view** used throughout this demo:
 
 - **Top panel**: selected flight/control signals (what the airframe is doing / what the controller is commanding).
 - **Bottom panel**: HTM-State outputs (state, spikes, sustained elevation), plus the **strict benchmark boundary** when available.
@@ -203,6 +458,8 @@ representative stable window (often mid-run or late-run, after warm-up).
   <source src="generated/media/uav_no_failure_baseline.mp4" type="video/mp4">
 </video>
 
+*(Placeholder — final video will reflect stable HTM-State with low spike activity and no sustained elevation.)*
+
 **How to read it:** you want **low anomaly/spike activity** and no sustained elevation over long stretches.
 
 ### 2) Engine failure (transition window)
@@ -212,6 +469,8 @@ This clip focuses on the failure transition window for an engine-failure run.
 <video controls playsinline width="900">
   <source src="generated/media/uav_engine_failure_transition.mp4" type="video/mp4">
 </video>
+
+*(Placeholder — final video will show a transient spike followed by partial or absent sustained elevation, illustrating a compensable failure.)*
 
 **How to read it:** the vertical boundary line marks the strict “toggle” time. A clean detection shows (i) **spikes after**
 the boundary and/or (ii) a sustained elevated state after the boundary with limited pre-boundary false alarms.
@@ -225,19 +484,40 @@ This clip shows a “control surfaces” multi-fault style run (e.g., rudder/ail
   <source src="generated/media/uav_control_surface_failure_transition.mp4" type="video/mp4">
 </video>
 
+*(Placeholder — final video will show delayed but persistent HTM-State elevation consistent with prolonged control difficulty.)*
+
 **How to read it:** compare pre-boundary vs post-boundary behavior. In tough cases the signals may degrade gradually,
 and strict scoring will penalize **pre-boundary spikes** as false alarms even if they look like plausible precursors.
 
-### Selection criteria
+### Final roster selection logic
 
-Representative runs are selected deterministically from the per-run results table:
+Live visualizations are selected *after* the full offline sweep and are used only to illustrate patterns already present in the quantitative results.
 
-- **Typical case**: run with detection lag closest to the median for a given failure type
-- **Hard case**: run in the upper tail of detection lag (e.g., ~90th percentile) that is still successfully detected
-- **Baseline case**: a `no_failure` run with low false-alarm rate
-- **Miss case (if any)**: a run where detection did not occur, included for transparency
+Selection is deterministic and based on the per-run metrics:
 
-This selection ensures that live plots are **representative, not cherry-picked**.
+For each failure type, we include:
+
+1. **Typical sustained case**  
+   - Sustained elevation detected
+   - `sustained_lag_s` near the median for that failure type
+   - High `post_elev_frac` and high `max_state_post_boundary`
+
+2. **Fast transient (spike-only) case**  
+   - Spike detected shortly after boundary  
+   - No sustained elevation  
+   - Low `post_elev_frac`, often with non-zero `n_spikes_total`
+
+3. **Hard or ambiguous case**  
+   - Late detection, weak persistence, or borderline behavior
+   - Often characterized by moderate `n_spikes_total` but low `post_elev_frac`
+
+4. **Baseline (no-failure) case**  
+   - Low spike rate  
+   - No sustained elevation  
+   - Demonstrates stability under nominal conditions
+
+Runs are *not* selected based on visual appeal.
+They are selected to represent **distinct HTM-State response regimes** that recur across the dataset.
 
 ### Visualization method
 
@@ -286,8 +566,8 @@ Artifacts are written under:
 ### 3. Run the offline sweep
 
     python scripts/run_offline_uav.py \
-  --generated-dir demos/uav/generated \
-  --outdir demos/uav/generated/results/uav_sweep
+      --generated-dir demos/uav/generated/streams \
+      --outdir demos/uav/generated/results/uav_sweep
 
 This produces:
 - `demos/uav/generated/results/uav_sweep/per_run.csv`

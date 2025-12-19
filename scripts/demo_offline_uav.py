@@ -285,6 +285,7 @@ def evaluate_uav_csv(csv_path: Path, args: argparse.Namespace) -> Dict[str, obje
     sustained_detected = False
     sustained_lag_s: Optional[float] = None
     post_elev_frac: Optional[float] = None
+    max_state_post_boundary: Optional[float] = None
 
     if boundary_step is not None:
         persist_window_sec = args.persist_window_sec if args.persist_window_sec is not None else args.boundary_window_sec
@@ -305,6 +306,8 @@ def evaluate_uav_csv(csv_path: Path, args: argparse.Namespace) -> Dict[str, obje
                 thr = pre_med + float(args.elev_k_mad) * (pre_mad if pre_mad > 1e-9 else 1e-3)
 
             post_elev_frac = float((pd.Series(post_states) > thr).mean())
+            # Severity: maximum HTM-State after the strict benchmark boundary
+            max_state_post_boundary = float(max(post_states)) if len(post_states) else None
 
             hold_steps = sec_to_steps(float(args.elev_hold_sec), args.rate_hz)
             det_elev_step: Optional[int] = None
@@ -334,6 +337,7 @@ def evaluate_uav_csv(csv_path: Path, args: argparse.Namespace) -> Dict[str, obje
         "sustained_lag_s": sustained_lag_s,
         "false_alarms_spm": float(false_alarms_spm),
         "post_elev_frac": post_elev_frac,
+        "max_state_post_boundary": max_state_post_boundary,
         "n_spikes_total": int(len(spikes)),
     }
 
