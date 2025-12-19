@@ -353,6 +353,8 @@ Expectation:
 - Reinforces credibility of the system
 ```
 
+---
+
 # HTM-State UAV Demo — Operational Takeaways
 
 **What this demo shows**
