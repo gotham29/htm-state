@@ -99,6 +99,16 @@ Before looking at individual runs, we show a **single aggregate benchmark figure
 summarizing HTM-State behavior across *all eligible ALFA UAV failures* under a
 strict, unsupervised evaluation policy.
 
+> **ALFA dataset context (physical + sensing)**
+>
+> ![ALFA UAV platform and telemetry overview](demos/uav/generated/alfa.png)
+>
+> *ALFA fixed-wing UAV platform and representative telemetry streams.
+> The engine failure interval shown here defines the **ground-truth boundary**
+> used throughout this demo. HTM-State operates only on control and navigation
+> signals; failure labels are used **solely for evaluation and visualization**.*
+
+
 > **Figure (static):**  
 > Three-panel benchmark summary:
 >
@@ -112,6 +122,28 @@ strict, unsupervised evaluation policy.
 This figure explains **why the selected demo runs look the way they do**.
 The live demo illustrates *representative dynamics*; this benchmark shows
 *population-level behavior*.
+
+## Operational definitions (used throughout)
+
+These definitions correspond directly to the metrics reported in
+`per_run.csv` and the behavior shown in the live plots.
+
+- **Failure boundary**  
+  Known failure injection time from ALFA logs (ground truth), shown as a vertical line.
+  HTM-State does **not** observe this signal.
+
+- **Spike**  
+  A transient increase in HTM-State detected by the spike detector
+  (configured via recent/prior windows and growth threshold).
+  Interpreted as *awareness of change or novelty*.
+
+- **Sustained elevation**  
+  HTM-State remaining above a fixed elevation threshold for a significant
+  fraction of the post-boundary window.
+  Interpreted as a *persistent control difficulty regime*.
+
+- **Post-elev frac**  
+  Fraction of post-boundary time steps where HTM-State is classified as elevated.
 
 ## Core live demo roster (4 runs)
 
