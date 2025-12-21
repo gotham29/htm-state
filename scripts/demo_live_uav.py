@@ -798,12 +798,12 @@ python scripts/demo_live_uav.py \
 
 # TYPICAL SPIKE DETECTION
 python scripts/demo_live_uav.py \
-  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj.csv \
+  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-07-30-17-36-35_engine_failure_with_emr_traj.csv \
   --sleep 0.1
 
 # HARD SPIKE
 python scripts/demo_live_uav.py \
-  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-09-11-11-56-30_engine_failure.csv \
+  --csv demos/uav/generated/streams/engine_failure/carbonZ_2018-10-05-15-55-10_engine_failure_with_emr_traj.csv \
   --sleep 0.1
 
 # SUSTAINED 
