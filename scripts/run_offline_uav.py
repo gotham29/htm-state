@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
 import sys
@@ -16,8 +17,18 @@ for p in (str(REPO_ROOT), str(SCRIPTS_DIR)):
 from demo_offline_uav import evaluate_uav_csv, parse_args as offline_parse_args
 
 
+def _strip_tag_suffix(run_id: str) -> str:
+    """
+    Our generated artifacts sometimes suffix run IDs with a visualization/tag label:
+        2018-07-30-17-36-35__typical_spike
+    Classification should be based on the underlying run identity, so strip __... .
+    """
+    return run_id.split("__", 1)[0]
+
+
 def classify_failure(run_id: str) -> str:
-    n = run_id.lower()
+    base = _strip_tag_suffix(run_id)
+    n = base.lower()
 
     if "no_ground_truth" in n:
         return "no_ground_truth"
@@ -30,7 +41,7 @@ def classify_failure(run_id: str) -> str:
     has_aileron = ("aileron" in n and "failure" in n)
 
     families = sum([has_engine, has_elevator, has_rudder, has_aileron])
-    if families >= 2 or "__" in n:
+    if families >= 2:
         return "multi_fault"
 
     if has_engine:

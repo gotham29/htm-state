@@ -7,6 +7,49 @@
 This document supports a **live demonstration** of HTM-State on the ALFA UAV dataset.
 Quantitative benchmarking is performed offline; the runs shown here are **curated for intuition**.
 
+## Results (ALFA-style metrics, apples-to-apples)
+
+This section reports **ALFA-style evaluation metrics** consistent with:
+*Automatic Real-time Anomaly Detection for Autonomous Aerial Vehicles*.
+
+We report results for:
+
+- **ALFA-22 subset**: the 22 flight tests used for apples-to-apples comparison (as defined in `results/alfa22_manifest.csv`).
+- **All eligible ALFA runs**: the full sweep set used throughout this demo.
+
+### Operational detection definitions (what counts as a “detection”)
+
+We evaluate two HTM-State outputs as *detectors*:
+
+- **Spike detector**: first spike at/after the ground-truth boundary
+- **Sustained detector**: first sustained-elevation onset at/after the boundary
+
+For ALFA-style classification metrics (accuracy/precision/recall), a sequence is:
+
+- **True Positive (TP)**: has a fault and has ≥1 detection at/after boundary
+- **False Negative (FN)**: has a fault and has no detection at/after boundary
+- **False Positive (FP)**: no-fault sequence with ≥1 detection anywhere
+- **True Negative (TN)**: no-fault sequence with no detection anywhere
+
+### Summary table (fill by regenerated results)
+
+**Table X. ALFA-style metrics (Spike vs Sustained)**
+
+| Split | Detector | Accuracy | Precision | Recall | Avg det time (s) | Max det time (s) | Notes |
+|------:|----------|---------:|----------:|-------:|-----------------:|-----------------:|-------|
+| ALFA-22 | Spike | TBD | TBD | TBD | TBD | TBD | apples-to-apples |
+| ALFA-22 | Sustained | TBD | TBD | TBD | TBD | TBD | apples-to-apples |
+| All eligible | Spike | TBD | TBD | TBD | TBD | TBD | full sweep |
+| All eligible | Sustained | TBD | TBD | TBD | TBD | TBD | full sweep |
+
+### Ground-truth sanity check (boundary timing)
+
+Ground-truth fault injection times are taken from ALFA’s official “Processed Sequences”
+table: **Flight Time Pre-Failure (s)**. :contentReference[oaicite:1]{index=1}
+
+We run a row-by-row check against `results/uav_sweep/per_run.csv` and fail loudly if any
+boundary time differs beyond tolerance.
+
 ---
 
 ## What this demo is (and is not)
