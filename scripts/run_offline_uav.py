@@ -4,7 +4,7 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
-import sys
+import sys, copy
 import pandas as pd
 
 # Allow running as: python scripts/run_offline_uav_all.py
@@ -97,10 +97,21 @@ def main() -> None:
         run_id = csv_path.stem
         failure_type = classify_failure(run_id)
 
-        res = evaluate_uav_csv(csv_path, offline_args)
-        # STRICT benchmark policy: require a ground-truth boundary
-        if not res.get("has_boundary", False):
-            res = {"included": False, "exclude_reason": "no_boundary_strict"}
+        # For ALFA apples-to-apples metrics (accuracy/precision/recall),
+        # we must include "no_failure" sequences as negative examples even though
+        # they have no injection boundary. We therefore evaluate them with
+        # strict_boundary disabled, but keep strict for all failure runs.
+        if failure_type == "no_failure":
+            args_nf = copy.copy(offline_args)
+            args_nf.strict_boundary = False
+            res = evaluate_uav_csv(csv_path, args_nf)
+            # ensure boundary fields are empty for no-failure
+            res["boundary_time_s"] = None
+        else:
+            res = evaluate_uav_csv(csv_path, offline_args)
+            # STRICT benchmark policy: require a ground-truth boundary
+            if not res.get("has_boundary", False):
+                res = {"included": False, "exclude_reason": "no_boundary_strict"}
 
         coverage_rows.append({
             "run_id": run_id,

@@ -42,6 +42,16 @@ For ALFA-style classification metrics (accuracy/precision/recall), a sequence is
 | All eligible | Spike | TBD | TBD | TBD | TBD | TBD | full sweep |
 | All eligible | Sustained | TBD | TBD | TBD | TBD | TBD | full sweep |
 
+<!-- ALFA_APPLES_TO_APPLES:BEGIN -->
+
+| mode | n_sequences | n_fault | n_no_fault | accuracy | precision | recall | avg_detection_time_s | max_detection_time_s | tp | fp | fn |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| spike | 22 | 17 | 5 | 0.773 | 1.000 | 0.706 | 9.82 | 24.90 | 12 | 0 | 5 |
+| sustained | 22 | 17 | 5 | 0.636 | 1.000 | 0.529 | 1.88 | 12.70 | 9 | 0 | 8 |
+
+<!-- ALFA_APPLES_TO_APPLES:END -->
+
+
 ### Ground-truth sanity check (boundary timing)
 
 Ground-truth fault injection times are taken from ALFA’s official “Processed Sequences”

@@ -1,63 +1,82 @@
-#!/usr/bin/env python3
+#check_alpha_gt_vs_per_run.py
 from __future__ import annotations
-
 import math
+import argparse
+import re
+from pathlib import Path
+
 import pandas as pd
 
-ALFA_TABLE = {
-    # sequence_name: (failure_type_str, pre_failure_s)
-    # Fill from ALFA “Processed Sequences” table.
-    # Example entries:
-    "2018-07-30-17-36-35": ("Engine Full Power Loss", 133.4),
-    "2018-10-05-15-55-10": ("Engine Full Power Loss", 100.1),
-    "2018-10-18-11-08-24": ("No Failure", None),
-    # ...continue for the sequences you include in per_run.csv
-}
 
-TOL_S = 0.25  # 0.2s is cited by ALFA GT topic rate; add a little cushion.
+def _extract_seq_id(run_id: str) -> str | None:
+    """
+    Extract ALFA processed sequence ID from a run_id string.
+    Examples:
+      carbonZ_2018-10-18-11-04-08_1_engine_failure_with_emr_traj -> 2018-10-18-11-04-08_1
+      2018-09-11-11-56-30__hard_spike -> 2018-09-11-11-56-30
+    """
+    m = re.search(r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}(?:_\d+)?", str(run_id))
+    return m.group(0) if m else None
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser("Sanity-check ALFA ground-truth manifest vs per_run.csv")
+    p.add_argument("--per-run", required=True, type=str, help="Path to per_run.csv")
+    p.add_argument("--manifest", required=True, type=str, help="Path to alfa_gt_manifest.csv")
+    p.add_argument(
+        "--tolerance-s",
+        type=float,
+        default=0.25,
+        help="Allowed absolute difference (seconds) between per_run boundary_time_s and manifest gt_failure_time_s",
+    )
+    return p.parse_args()
+
 
 def main() -> None:
-    per_run = pd.read_csv("results/uav_sweep/per_run.csv")
+    args = parse_args()
+    per_run_path = Path(args.per_run)
+    manifest_path = Path(args.manifest)
 
-    # Expect these columns; adjust if you renamed them.
-    # run_id should match sequence base name (no _1/_2 suffix unless that’s your convention).
-    for required in ["run_id", "failure_type", "boundary_time_s"]:
-        if required not in per_run.columns:
-            raise SystemExit(f"Missing column: {required}")
+    per_run = pd.read_csv(per_run_path)
+    manifest = pd.read_csv(manifest_path)
 
-    problems = []
-    for _, r in per_run.iterrows():
-        run_id = str(r["run_id"])
-        boundary = r["boundary_time_s"]
-        gt = ALFA_TABLE.get(run_id)
+    if "run_id" not in per_run.columns:
+        raise ValueError(f"per_run missing run_id column: {per_run_path}")
+    if "run_id" not in manifest.columns:
+        raise ValueError(f"manifest missing run_id column: {manifest_path}")
+    if "gt_failure_time_s" not in manifest.columns:
+        raise ValueError(f"manifest missing gt_failure_time_s column: {manifest_path}")
+    if "boundary_time_s" not in per_run.columns:
+        raise ValueError(f"per_run missing boundary_time_s column: {per_run_path}")
 
-        if gt is None:
-            problems.append((run_id, "missing_in_ALFA_TABLE", boundary, None))
-            continue
+    merged = per_run.merge(
+        manifest[["run_id", "gt_failure_time_s"]],
+        on="run_id",
+        how="left",
+        validate="one_to_one",
+    )
 
-        gt_type, gt_pre = gt
+    merged["seq_id"] = merged["run_id"].map(_extract_seq_id)
+    merged["abs_diff_s"] = (merged["boundary_time_s"] - merged["gt_failure_time_s"]).abs()
 
-        if gt_pre is None:
-            # no-failure case
-            if boundary == boundary and not pd.isna(boundary):
-                problems.append((run_id, "should_have_no_boundary", boundary, None))
-            continue
+    missing = merged["gt_failure_time_s"].isna()
+    if missing.any():
+        print("[check] WARNING: missing gt_failure_time_s for these run_id rows:")
+        print(merged.loc[missing, ["run_id", "seq_id"]].to_string(index=False))
 
-        # failure case
-        if boundary != boundary or pd.isna(boundary):
-            problems.append((run_id, "missing_boundary_time_s", boundary, gt_pre))
-            continue
+    bad = (~missing) & (merged["abs_diff_s"] > float(args.tolerance_s))
+    if bad.any():
+        print(f"[check] MISMATCHES (> {args.tolerance_s:.3f}s):")
+        print(
+            merged.loc[bad, ["run_id", "seq_id", "boundary_time_s", "gt_failure_time_s", "abs_diff_s"]]
+            .sort_values("abs_diff_s", ascending=False)
+            .to_string(index=False)
+        )
+        raise SystemExit(2)
 
-        if abs(float(boundary) - float(gt_pre)) > TOL_S:
-            problems.append((run_id, "boundary_mismatch", float(boundary), float(gt_pre)))
+    print(f"[check] OK: {len(merged)} rows; all within {args.tolerance_s:.3f}s tolerance.")
 
-    if not problems:
-        print("✅ per_run.csv boundaries match ALFA pre-failure times within tolerance.")
-        return
-
-    print("❌ Mismatches found:")
-    for p in problems:
-        print("  ", p)
 
 if __name__ == "__main__":
     main()
+
