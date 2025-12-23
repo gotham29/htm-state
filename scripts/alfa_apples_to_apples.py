@@ -1,5 +1,6 @@
-from __future__ import annotations
+#alfa_apples_to_apples.py
 
+from __future__ import annotations
 import argparse
 import re
 from pathlib import Path
@@ -63,8 +64,12 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def _compute_binary_metrics(df: pd.DataFrame, detected_col: str, lag_col: str) -> dict[str, Any]:
-    detected = df[detected_col].fillna(False).astype(bool)
+def _compute_binary_metrics_from_series(
+    df: pd.DataFrame,
+    detected: pd.Series,
+    lag_s: pd.Series,
+) -> dict[str, Any]:
+    detected = detected.fillna(False).astype(bool)
     # "has fault" = any failure type other than no-failure.
     # (Some pipelines use "none", yours uses "no_failure".)
     ft = df["failure_type"].astype(str).str.lower()
@@ -81,10 +86,10 @@ def _compute_binary_metrics(df: pd.DataFrame, detected_col: str, lag_col: str) -
     recall = tp / (tp + fn) if (tp + fn) else float("nan")
 
     # Detection time stats: over true positives only (avoids mixing misses into time averages)
-    tp_rows = df.loc[detected & has_fault].copy()
-    tp_rows = tp_rows[np.isfinite(tp_rows[lag_col])]
-    avg_dt = float(tp_rows[lag_col].mean()) if len(tp_rows) else float("nan")
-    max_dt = float(tp_rows[lag_col].max()) if len(tp_rows) else float("nan")
+    lag_s = pd.to_numeric(lag_s, errors="coerce")
+    tp_lags = lag_s[(detected & has_fault) & np.isfinite(lag_s)]
+    avg_dt = float(tp_lags.mean()) if len(tp_lags) else float("nan")
+    max_dt = float(tp_lags.max()) if len(tp_lags) else float("nan")
 
     return {
         "n_sequences": n,
@@ -100,6 +105,25 @@ def _compute_binary_metrics(df: pd.DataFrame, detected_col: str, lag_col: str) -
         "avg_detection_time_s": avg_dt,
         "max_detection_time_s": max_dt,
     }
+
+
+def _compute_binary_metrics(df: pd.DataFrame, detected_col: str, lag_col: str) -> dict[str, Any]:
+    return _compute_binary_metrics_from_series(
+        df=df,
+        detected=df[detected_col],
+        lag_s=df[lag_col],
+    )
+
+
+def _compute_or_lag(df: pd.DataFrame, lag_cols: list[str]) -> pd.Series:
+    # row-wise min over lag columns, ignoring NaNs
+    lags = [pd.to_numeric(df[c], errors="coerce") for c in lag_cols]
+    if not lags:
+        return pd.Series([np.nan] * len(df), index=df.index)
+    m = lags[0].copy()
+    for x in lags[1:]:
+        m = np.fmin(m, x)  # fmin ignores NaNs if the other side is finite
+    return m
 
 
 def _render_markdown_table(rows: list[dict[str, Any]]) -> str:
@@ -192,6 +216,17 @@ def main() -> None:
     if args.mode in ("sustained", "both"):
         r = _compute_binary_metrics(df, detected_col="sustained_detected", lag_col="sustained_lag_s")
         r["mode"] = "sustained"
+        rows.append(r)
+
+    # OR row is only meaningful when we have both detector outputs available.
+    if args.mode == "both":
+        detected_or = (
+            df["spike_detected"].fillna(False).astype(bool)
+            | df["sustained_detected"].fillna(False).astype(bool)
+        )
+        lag_or = _compute_or_lag(df, ["spike_lag_s", "sustained_lag_s"])
+        r = _compute_binary_metrics_from_series(df=df, detected=detected_or, lag_s=lag_or)
+        r["mode"] = "or"
         rows.append(r)
 
     out_csv = Path(args.out)

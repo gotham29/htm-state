@@ -46,8 +46,8 @@ For ALFA-style classification metrics (accuracy/precision/recall), a sequence is
 
 | mode | n_sequences | n_fault | n_no_fault | accuracy | precision | recall | avg_detection_time_s | max_detection_time_s | tp | fp | fn |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| spike | 22 | 17 | 5 | 0.773 | 1.000 | 0.706 | 9.82 | 24.90 | 12 | 0 | 5 |
-| sustained | 22 | 17 | 5 | 0.636 | 1.000 | 0.529 | 1.88 | 12.70 | 9 | 0 | 8 |
+| spike | 22 | 17 | 5 | 0.773 | 1.000 | 0.706 | 7.75 | 15.80 | 12 | 0 | 5 |
+| sustained | 22 | 17 | 5 | 0.591 | 1.000 | 0.471 | 0.45 | 2.20 | 8 | 0 | 9 |
 
 <!-- ALFA_APPLES_TO_APPLES:END -->
 
