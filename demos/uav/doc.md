@@ -42,12 +42,25 @@ For ALFA-style classification metrics (accuracy/precision/recall), a sequence is
 | All eligible | Spike | TBD | TBD | TBD | TBD | TBD | full sweep |
 | All eligible | Sustained | TBD | TBD | TBD | TBD | TBD | full sweep |
 
+### Apples-to-apples comparison (ALFA authors’ protocol)
+
+We report **sequence-level** accuracy/precision/recall following the ALFA real-time paper’s evaluation rules:
+
+- **No-failure sequences:** any alert at any time counts as a **false positive (FP)**; no alert counts as a **true negative (TN)**.
+- **Failure sequences:** an alert **after** the failure boundary counts as a **true positive (TP)**; no post-boundary alert counts as a **false negative (FN)**.
+- **Early alerts:** an alert **before** the failure boundary in a failure sequence is also counted as an **FP** (so a single sequence can contribute both an FP and an FN, consistent with the ALFA authors’ reported failure case).
+
+For transparency, we break FP into:
+- **FP (no-failure):** false alarms in nominal flights
+- **FP (early in fault):** alarms triggered before the known failure boundary
+
 <!-- ALFA_APPLES_TO_APPLES:BEGIN -->
 
 | mode | n_sequences | n_fault | n_no_fault | accuracy | precision | recall | avg_detection_time_s | max_detection_time_s | tp | fp | fn |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| spike | 22 | 17 | 5 | 0.773 | 1.000 | 0.706 | 7.75 | 15.80 | 12 | 0 | 5 |
-| sustained | 22 | 17 | 5 | 0.591 | 1.000 | 0.471 | 0.45 | 2.20 | 8 | 0 | 9 |
+| spike | 22 | 17 | 5 | 0.773 | 1.000 | 0.706 | 7.71 | 14.90 | 12 | 0 | 5 |
+| sustained | 22 | 17 | 5 | 0.500 | 1.000 | 0.353 | 2.17 | 10.60 | 6 | 0 | 11 |
+| or | 22 | 17 | 5 | 0.864 | 1.000 | 0.824 | 4.04 | 10.60 | 14 | 0 | 3 |
 
 <!-- ALFA_APPLES_TO_APPLES:END -->
 
@@ -239,6 +252,26 @@ We expose two policies because HTM-State intentionally distinguishes novelty vs 
 For **apples-to-apples** against prior ALFA baselines (which trigger on “anomaly events”),
 Policy **S∨P** is the more direct analogue. Policy **S** is the operationally conservative
 variant aligned with this demo’s “persistent control difficulty” thesis.
+
+### What counts as a false positive (and why some plotted events may not count)
+
+ALFA’s precision/recall are defined at the **sequence level**: each flight is classified as either
+a correct detection or a misclassification. In particular, a **false positive** is any *no-failure*
+sequence that contains a **false detection event** (any alarm raised in a negative sequence). :contentReference[oaicite:4]{index=4}
+
+In this repo we separate:
+
+- **Events (monitoring view):** transient spikes or sustained threshold crossings that may occur anywhere in the flight.
+  These are useful for understanding dynamics and are shown in the per-run plots.
+- **Detections/alarms (evaluation view):** events that satisfy the **ALFA “DETECT” policy** used to compute
+  accuracy/precision/recall and detection-time metrics.
+
+For sequences with injected faults, “DETECT” is evaluated **after the failure boundary** (to support a meaningful detection lag).
+For **no-failure** sequences there is **no boundary**; therefore, for ALFA-style metrics, any alarm/event anywhere in the flight
+counts as a **false positive sequence**.
+
+To prevent confusion in figures, plots distinguish “events anywhere” from “counted alarms” (post-boundary), and no-failure plots
+explicitly indicate that there is no boundary.
 
 ### ALFA-style summary table (placeholders — fill from regenerated sweep)
 
